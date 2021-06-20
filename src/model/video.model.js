@@ -9,7 +9,8 @@ module.exports = mongoose => {
                 videoThumbnail: String,
                 category: Number,
                 published: Boolean,
-                membership: Boolean
+                membership: Boolean,
+                totalViews: Number
             },
             { timestamps: true }
         )
