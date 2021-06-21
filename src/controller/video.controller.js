@@ -1,6 +1,7 @@
 const db = require("../model");
-const path = '.../assets/';
+const pathFolder = '.../assets/';
 const fs = require('fs');
+const path = require('path');
 
 const Tutorial = db.tutorials;
 
@@ -25,7 +26,7 @@ exports.create = (req, res) => {
     });
 
     const base64data = req.body.videoFile.replace(/^data:.*,/, '');
-    fs.writeFile(path + req.body.title, base64data, 'base64', (err) => {
+    fs.writeFile(pathFolder + req.body.title, base64data, 'base64', (err) => {
         if (err) {
             console.log(err);
         } else {
@@ -99,7 +100,7 @@ exports.update = (req, res) => {
             if (!data)
                 res.status(404).send({ message: "Not found Video with id " + id });
             else {
-                fs.unlink(path + data.title, (err) => {
+                fs.unlink(pathFolder + data.title, (err) => {
                     if (err) {
                         console.log(err);
                     } else {
@@ -112,7 +113,7 @@ exports.update = (req, res) => {
                                         message: `Cannot update Video with id=${id}. Maybe Video was not found!`
                                     });
                                 } else {
-                                    fs.writeFile(path + req.body.title, base64data, 'base64', (err) => {
+                                    fs.writeFile(pathFolder + req.body.title, base64data, 'base64', (err) => {
                                         if (err) {
                                             console.log(err);
                                         } else {
@@ -165,7 +166,7 @@ exports.delete = (req, res) => {
                     message: `Cannot delete Video with id=${id}. Maybe Video was not found!`
                 });
             } else {
-                fs.unlink(path + data.title, (err) => {
+                fs.unlink(pathFolder + data.title, (err) => {
                     if (err) {
                         console.log(err);
                     } else {
@@ -188,6 +189,18 @@ exports.delete = (req, res) => {
 
 // Delete all Video from the database.
 exports.deleteAll = (req, res) => {
+
+
+    fs.readdir(pathFolder, (err, files) => {
+        if (err) throw err;
+
+        for (const file of files) {
+            fs.unlink(path.join(directory, file), err => {
+                if (err) throw err;
+            });
+        }
+    });
+
     Video.deleteMany({})
         .then(data => {
             res.send({
