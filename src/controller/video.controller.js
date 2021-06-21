@@ -29,22 +29,23 @@ exports.create = (req, res) => {
         if (err) {
             console.log(err);
         } else {
-            res.set('Location', userFiles + file.name);
+            // res.set('Location', userFiles + file.name);
+
+            // Save Tutorial in the database
+            video
+                .save(video)
+                .then(data => {
+                    res.send(data);
+                })
+                .catch(err => {
+                    res.status(500).send({
+                        message:
+                            err.message || "Some error occurred while creating the Video."
+                    });
+                });
         }
     });
 
-    // Save Tutorial in the database
-    video
-        .save(video)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Video."
-            });
-        });
 };
 // Retrieve all Video from the database.
 exports.findAll = (req, res) => {
@@ -87,21 +88,70 @@ exports.update = (req, res) => {
         });
     }
 
+
+
     const id = req.params.id;
 
-    Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    //delete video existing first
+    Video.findById(id)
         .then(data => {
-            if (!data) {
-                res.status(404).send({
-                    message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+            console.log(data)
+            if (!data)
+                res.status(404).send({ message: "Not found Video with id " + id });
+            else {
+                fs.unlink(path + data.title, (err) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // kalo sukses
+                        // res.send(data);
+                        Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                            .then(data => {
+                                if (!data) {
+                                    res.status(404).send({
+                                        message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+                                    });
+                                } else {
+                                    fs.writeFile(path + req.body.title, base64data, 'base64', (err) => {
+                                        if (err) {
+                                            console.log(err);
+                                        } else {
+                                            // res.set('Location', userFiles + file.name);
+
+                                            // Save Tutorial in the database
+                                            video
+                                                .save(video)
+                                                .then(data => {
+                                                    // res.send(data);
+
+                                                    res.send({ message: "Video was updated successfully." });
+                                                })
+                                                .catch(err => {
+                                                    res.status(500).send({
+                                                        message:
+                                                            err.message || "Some error occurred while creating the Video."
+                                                    });
+                                                });
+                                        }
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    message: "Error updating Video with id=" + id
+                                });
+                            });
+                    }
                 });
-            } else res.send({ message: "Video was updated successfully." });
+            }
         })
         .catch(err => {
-            res.status(500).send({
-                message: "Error updating Video with id=" + id
-            });
+            res
+                .status(500)
+                .send({ message: "Error retrieving Video with id=" + id });
         });
+
+
 };
 
 // Delete a Video with the specified id in the request
@@ -115,9 +165,18 @@ exports.delete = (req, res) => {
                     message: `Cannot delete Video with id=${id}. Maybe Video was not found!`
                 });
             } else {
-                res.send({
-                    message: "Video was deleted successfully!"
+                fs.unlink(path + data.title, (err) => {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        // kalo sukses
+                        res.send({
+                            message: "Video was deleted successfully!"
+                        });
+                    }
                 });
+
+
             }
         })
         .catch(err => {
