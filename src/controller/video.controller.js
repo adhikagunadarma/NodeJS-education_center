@@ -19,14 +19,14 @@ exports.create = (req, res) => {
     // Create a Video
     const video = new Video({
         title: req.body.title,
-        description: req.body.desc,
+        description: req.body.description,
         videoFile: req.body.videoFile,
         videoThumbnail: req.body.videoThumbnail,
         videoFileName: req.body.videoFileName,
         videoThumbnailName: req.body.videoThumbnailName,
         category: req.body.category,
         published: false,
-        membership: req.body.member,
+        membership: req.body.membership,
         totalViews: 0
     });
 
@@ -114,7 +114,7 @@ exports.update = (req, res) => {
     //delete video existing first
     Video.findById(id)
         .then(data => {
-            console.log(data)
+            // console.log(data)
             if (!data)
                 res.status(404).send({ message: "Not found Video with id " + id });
             else {
