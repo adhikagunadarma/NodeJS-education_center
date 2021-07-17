@@ -47,7 +47,12 @@ exports.create = (req, res) => {
                     video
                         .save(video)
                         .then(data => {
-                            res.send(data);
+                            // res.send(data);
+                            res.status(200).send({
+                                statusMessage:
+                                    "Sukses Membuat video",
+                                statusCode: 0
+                            });
                         })
                         .catch(err => {
                             res.status(500).send({
@@ -113,48 +118,81 @@ exports.update = (req, res) => {
             if (!data)
                 res.status(404).send({ message: "Not found Video with id " + id });
             else {
-                fs.unlink(pathFolder + data.title, (err) => {
+
+                fs.unlink(videosPathFolder + data.videoFileName, (err) => {
                     if (err) {
-                        console.log(err);
+                        res.status(500).send({
+                            message:
+                                "Error while deleting video file : " + err.message
+                        });
+                        console.log("Error while deleting video file : " + err);
                     } else {
                         // kalo sukses
                         // res.send(data);
-                        Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                            .then(data => {
-                                if (!data) {
-                                    res.status(404).send({
-                                        message: `Cannot update Video with id=${id}. Maybe Video was not found!`
-                                    });
-                                } else {
-                                    fs.writeFile(pathFolder + req.body.title, base64data, 'base64', (err) => {
-                                        if (err) {
-                                            console.log(err);
+                        fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
+                            if (err) {
+                                res.status(500).send({
+                                    message:
+                                        "Error while deleting video thumbnail file : " + err.message
+                                });
+                                console.log("Error while deleting video thumbnail file : " + err);
+                            } else {
+                                Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                                    .then(data => {
+                                        if (!data) {
+                                            res.status(404).send({
+                                                message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+                                            });
                                         } else {
-                                            // res.set('Location', userFiles + file.name);
-
-                                            // Save Tutorial in the database
-                                            video
-                                                .save(video)
-                                                .then(data => {
-                                                    // res.send(data);
-
-                                                    res.send({ message: "Video was updated successfully." });
-                                                })
-                                                .catch(err => {
+                                            // setelah di delete filenya, baru save ulang
+                                            const videoBase64data = req.body.videoFile.replace(/^data:.*,/, '');
+                                            const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
+                                            fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
+                                                if (err) {
                                                     res.status(500).send({
                                                         message:
-                                                            err.message || "Some error occurred while creating the Video."
+                                                            "Error while saving new video file : " + err.message
                                                     });
-                                                });
+                                                    console.log("Error while saving new video file : " + err);
+                                                } else {
+                                                    // res.set('Location', userFiles + file.name);
+                                                    fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                                                        if (err) {
+                                                            res.status(500).send({
+                                                                message:
+                                                                    "Error while saving new thumbnail file : " + err.message
+                                                            });
+                                                            console.log("Error while saving new thumbnail file : " + err);
+                                                        } else {
+                                                            Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                                                                .then(data => {
+                                                                    if (!data) {
+                                                                        res.status(404).send({
+                                                                            message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+                                                                        });
+                                                                    } else res.send({ message: "Video was updated successfully." });
+                                                                })
+                                                                .catch(err => {
+                                                                    res.status(500).send({
+                                                                        message: "Error updating Tutorial with id=" + id
+                                                                    });
+                                                                });
+                                                        }
+                                                    });
+                                                    // Save Video in the database
+
+                                                }
+                                            });
                                         }
+                                    })
+                                    .catch(err => {
+                                        res.status(500).send({
+                                            message: "Error updating Video with id=" + id
+                                        });
                                     });
-                                }
-                            })
-                            .catch(err => {
-                                res.status(500).send({
-                                    message: "Error updating Video with id=" + id
-                                });
-                            });
+                            }
+                        });
+
                     }
                 });
             }
@@ -179,13 +217,26 @@ exports.delete = (req, res) => {
                     message: `Cannot delete Video with id=${id}. Maybe Video was not found!`
                 });
             } else {
-                fs.unlink(pathFolder + data.title, (err) => {
+                fs.unlink(videosPathFolder + data.videoFileName, (err) => {
                     if (err) {
+                        res.status(500).send({
+                            message: "Cannot Delete video with id=" + id
+                        });
                         console.log(err);
                     } else {
                         // kalo sukses
-                        res.send({
-                            message: "Video was deleted successfully!"
+                        fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
+                            if (err) {
+                                res.status(500).send({
+                                    message: "Cannot Delete thumbnail video with id=" + id
+                                });
+                                console.log(err);
+                            } else {
+                                // kalo sukses
+                                res.send({
+                                    message: "Video was deleted successfully!"
+                                });
+                            }
                         });
                     }
                 });
@@ -194,8 +245,9 @@ exports.delete = (req, res) => {
             }
         })
         .catch(err => {
+            console.log(err)
             res.status(500).send({
-                message: "Could not delete Tutorial with id=" + id
+                message: "Could not delete Video with id=" + id
             });
         });
 };
@@ -204,11 +256,21 @@ exports.delete = (req, res) => {
 exports.deleteAll = (req, res) => {
 
 
-    fs.readdir(pathFolder, (err, files) => {
+    fs.readdir(videosPathFolder, (err, files) => {
         if (err) throw err;
 
         for (const file of files) {
-            fs.unlink(path.join(directory, file), err => {
+            fs.unlink(path.join(videosPathFolder, file), err => {
+                if (err) throw err;
+            });
+        }
+    });
+
+    fs.readdir(thumbnailsPathFolder, (err, files) => {
+        if (err) throw err;
+
+        for (const file of files) {
+            fs.unlink(path.join(thumbnailsPathFolder, file), err => {
                 if (err) throw err;
             });
         }
