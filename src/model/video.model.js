@@ -1,19 +1,19 @@
 
 module.exports = mongoose => {
     var schema = mongoose.Schema(
-        mongoose.Schema(
-            {
-                title: String,
-                description: String,
-                videoFile: String,
-                videoThumbnail: String,
-                category: Number,
-                published: Boolean,
-                membership: Boolean,
-                totalViews: Number
-            },
-            { timestamps: true }
-        )
+        {
+            title: String,
+            description: String,
+            videoFile: String,
+            videoFileName: String,
+            videoThumbnail: String,
+            videoThumbnailName: String,
+            category: Number,
+            published: Boolean,
+            membership: Boolean,
+            totalViews: Number
+        },
+        { timestamps: true }
     );
 
     schema.method("toJSON", function () {

@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-const db = require("./app/models");
+const db = require("./src/model/");
 db.mongoose
     .connect(db.url, {
         useNewUrlParser: true,
@@ -36,7 +36,7 @@ db.mongoose
 //     res.json({ message: "Welcome to bezkoder application." });
 // });
 
-// require("./app/routes/tutorial.route")(app);
+require("./src/route/video.route")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

@@ -1,9 +1,12 @@
 const db = require("../model");
-const pathFolder = '.../assets/';
+const videosPathFolder = './assets/videos/';
+const thumbnailsPathFolder = './assets/thumbnails/';
+
+// const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
 const path = require('path');
 
-const Tutorial = db.tutorials;
+const Video = db.video;
 
 // Create and Save a new Video
 exports.create = (req, res) => {
@@ -13,37 +16,47 @@ exports.create = (req, res) => {
         return;
     }
 
-    // Create a Tutorial
+    // Create a Video
     const video = new Video({
         title: req.body.title,
         description: req.body.desc,
         videoFile: req.body.videoFile,
         videoThumbnail: req.body.videoThumbnail,
+        videoFileName: req.body.videoFileName,
+        videoThumbnailName: req.body.videoThumbnailName,
         category: req.body.category,
         published: false,
         membership: req.body.member,
         totalViews: 0
     });
 
-    const base64data = req.body.videoFile.replace(/^data:.*,/, '');
-    fs.writeFile(pathFolder + req.body.title, base64data, 'base64', (err) => {
+    const videoBase64data = req.body.videoFile.replace(/^data:.*,/, '');
+    const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
+    fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
+
         if (err) {
             console.log(err);
         } else {
             // res.set('Location', userFiles + file.name);
+            fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                if (err) {
+                    console.log(err);
+                } else {
 
-            // Save Tutorial in the database
-            video
-                .save(video)
-                .then(data => {
-                    res.send(data);
-                })
-                .catch(err => {
-                    res.status(500).send({
-                        message:
-                            err.message || "Some error occurred while creating the Video."
-                    });
-                });
+                    // Save Video in the database
+                    video
+                        .save(video)
+                        .then(data => {
+                            res.send(data);
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                message:
+                                    err.message || "Some error occurred while creating the Video."
+                            });
+                        });
+                }
+            });
         }
     });
 
