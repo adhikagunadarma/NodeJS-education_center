@@ -38,6 +38,8 @@ db.mongoose
 //     res.json({ message: "Welcome to bezkoder application." });
 // });
 
+
+require("./src/route/category.route")(app);
 require("./src/route/video.route")(app);
 
 // set port, listen for requests
