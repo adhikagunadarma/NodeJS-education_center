@@ -12,7 +12,11 @@ const Video = db.video;
 exports.create = (req, res) => {
     // Validate request
     if (!req.body) {
-        res.status(400).send({ message: "Content can not be empty!" });
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
         return;
     }
 
@@ -35,11 +39,22 @@ exports.create = (req, res) => {
     fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
 
         if (err) {
+            res.status(500).send({
+                statusMessage:
+                    "Error while saving video file : " + err.message,
+
+                statusCode: -999
+            });
             console.log(err);
         } else {
             // res.set('Location', userFiles + file.name);
             fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
                 if (err) {
+                    res.status(500).send({
+                        statusMessage:
+                            "Error while saving thumbnail file : " + err.message,
+                        statusCode: -999
+                    });
                     console.log(err);
                 } else {
 
@@ -56,8 +71,8 @@ exports.create = (req, res) => {
                         })
                         .catch(err => {
                             res.status(500).send({
-                                message:
-                                    err.message || "Some error occurred while creating the Video."
+                                statusMessage: err.message || "Some error occurred while creating the Video.",
+                                statusCode: -999,
                             });
                         });
                 }
@@ -73,12 +88,16 @@ exports.findAll = (req, res) => {
 
     Video.find(condition)
         .then(data => {
-            res.send(data);
+            res.send({
+                statusMessage: "Berhasil GET all Videos",
+                statusCode: 0,
+                data: data
+            });
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || "Some error occurred while retrieving videos."
+                statusMessage: err.message || "Some error occurred while retrieving the Video.",
+                statusCode: -999,
             });
         });
 };
@@ -89,21 +108,35 @@ exports.findOne = (req, res) => {
     Video.findById(id)
         .then(data => {
             if (!data)
-                res.status(404).send({ message: "Not found Video with id " + id });
-            else res.send(data);
+                res.status(404).send({
+                    statusMessage: "Not found Video with id " + id,
+                    statusCode: -999,
+                });
+            else {
+                res.send({
+                    statusMessage: "Berhasil get Video with id " + id,
+                    statusCode: 0,
+                    data: data
+                });
+            }
         })
         .catch(err => {
             res
                 .status(500)
-                .send({ message: "Error retrieving Video with id=" + id });
+                .send({
+                    tatusMessage: "Error retrieving Video with id=" + id,
+                    statusCode: -999,
+                });
         });
 };
 
 // Update a Video by the id in the request
 exports.update = (req, res) => {
     if (!req.body) {
-        return res.status(400).send({
-            message: "Data to update can not be empty!"
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
         });
     }
 
@@ -116,14 +149,19 @@ exports.update = (req, res) => {
         .then(data => {
             // console.log(data)
             if (!data)
-                res.status(404).send({ message: "Not found Video with id " + id });
+                res.status(404).send({
+                    statusMessage:
+                        "Not found Video with id " + id,
+                    statusCode: -999
+                });
             else {
 
                 fs.unlink(videosPathFolder + data.videoFileName, (err) => {
                     if (err) {
                         res.status(500).send({
-                            message:
-                                "Error while deleting video file : " + err.message
+                            statusMessage:
+                                "Error while deleting video file : " + err.message,
+                            statusCode: -999
                         });
                         console.log("Error while deleting video file : " + err);
                     } else {
@@ -132,8 +170,9 @@ exports.update = (req, res) => {
                         fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
                             if (err) {
                                 res.status(500).send({
-                                    message:
-                                        "Error while deleting video thumbnail file : " + err.message
+                                    statusMessage:
+                                        "Error while deleting video thumbnail file : " + err.message,
+                                    statusCode: -999
                                 });
                                 console.log("Error while deleting video thumbnail file : " + err);
                             } else {
@@ -141,7 +180,8 @@ exports.update = (req, res) => {
                                     .then(data => {
                                         if (!data) {
                                             res.status(404).send({
-                                                message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+                                                statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
+                                                statusCode: -999
                                             });
                                         } else {
                                             // setelah di delete filenya, baru save ulang
@@ -150,8 +190,9 @@ exports.update = (req, res) => {
                                             fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
                                                 if (err) {
                                                     res.status(500).send({
-                                                        message:
-                                                            "Error while saving new video file : " + err.message
+                                                        statusMessage:
+                                                            "Error while saving new video file : " + err.message,
+                                                        statusCode: -999
                                                     });
                                                     console.log("Error while saving new video file : " + err);
                                                 } else {
@@ -159,8 +200,9 @@ exports.update = (req, res) => {
                                                     fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
                                                         if (err) {
                                                             res.status(500).send({
-                                                                message:
-                                                                    "Error while saving new thumbnail file : " + err.message
+                                                                statusMessage:
+                                                                    "Error while saving new thumbnail file : " + err.message,
+                                                                statusCode: -999
                                                             });
                                                             console.log("Error while saving new thumbnail file : " + err);
                                                         } else {
@@ -168,13 +210,18 @@ exports.update = (req, res) => {
                                                                 .then(data => {
                                                                     if (!data) {
                                                                         res.status(404).send({
-                                                                            message: `Cannot update Video with id=${id}. Maybe Video was not found!`
+                                                                            statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
+                                                                            statusCode: -999
                                                                         });
-                                                                    } else res.send({ message: "Video was updated successfully." });
+                                                                    } else res.send({
+                                                                        statusMessage: `Video with id=${id} was updated successfully`,
+                                                                        statusCode: 0
+                                                                    });
                                                                 })
                                                                 .catch(err => {
                                                                     res.status(500).send({
-                                                                        message: "Error updating Tutorial with id=" + id
+                                                                        statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
+                                                                        statusCode: -999
                                                                     });
                                                                 });
                                                         }
@@ -187,7 +234,8 @@ exports.update = (req, res) => {
                                     })
                                     .catch(err => {
                                         res.status(500).send({
-                                            message: "Error updating Video with id=" + id
+                                            statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
+                                            statusCode: -999
                                         });
                                     });
                             }
@@ -198,9 +246,10 @@ exports.update = (req, res) => {
             }
         })
         .catch(err => {
-            res
-                .status(500)
-                .send({ message: "Error retrieving Video with id=" + id });
+            res.status(500).send({
+                statusMessage: "Error updating Video. Error : " + err.message,
+                statusCode: -999
+            });
         });
 
 
@@ -214,13 +263,16 @@ exports.delete = (req, res) => {
         .then(data => {
             if (!data) {
                 res.status(404).send({
-                    message: `Cannot delete Video with id=${id}. Maybe Video was not found!`
+                    statusMessage: `Cannot delete Video with id=${id}. Maybe Video was not found!`,
+                    statusCode: -999
                 });
+
             } else {
                 fs.unlink(videosPathFolder + data.videoFileName, (err) => {
                     if (err) {
                         res.status(500).send({
-                            message: "Cannot Delete video with id=" + id
+                            statusMessage: "Cannot Delete video with id=" + id,
+                            statusCode: -999
                         });
                         console.log(err);
                     } else {
@@ -228,13 +280,15 @@ exports.delete = (req, res) => {
                         fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
                             if (err) {
                                 res.status(500).send({
-                                    message: "Cannot Delete thumbnail video with id=" + id
+                                    statusMessage: "Cannot Delete thumbnail video with id=" + id,
+                                    statusCode: -999
                                 });
                                 console.log(err);
                             } else {
                                 // kalo sukses
                                 res.send({
-                                    message: "Video was deleted successfully!"
+                                    statusMessage: "Video with id=" + id + ",was deleted successfully!",
+                                    statusCode: 0
                                 });
                             }
                         });
@@ -247,7 +301,8 @@ exports.delete = (req, res) => {
         .catch(err => {
             console.log(err)
             res.status(500).send({
-                message: "Could not delete Video with id=" + id
+                statusMessage: "Could not delete Video with id=" + id,
+                statusCode: -999
             });
         });
 };
@@ -257,49 +312,86 @@ exports.deleteAll = (req, res) => {
 
 
     fs.readdir(videosPathFolder, (err, files) => {
-        if (err) throw err;
-
-        for (const file of files) {
-            fs.unlink(path.join(videosPathFolder, file), err => {
-                if (err) throw err;
-            });
-        }
-    });
-
-    fs.readdir(thumbnailsPathFolder, (err, files) => {
-        if (err) throw err;
-
-        for (const file of files) {
-            fs.unlink(path.join(thumbnailsPathFolder, file), err => {
-                if (err) throw err;
-            });
-        }
-    });
-
-    Video.deleteMany({})
-        .then(data => {
-            res.send({
-                message: `${data.deletedCount} Videos were deleted successfully!`
-            });
-        })
-        .catch(err => {
+        // if (err) throw err;
+        if (err) {
             res.status(500).send({
-                message:
-                    err.message || "Some error occurred while removing all Videos."
+                statusMessage: "Could not read Videos folder",
+                statusCode: -999
             });
-        });
+        } else {
+            for (const file of files) {
+                fs.unlink(path.join(videosPathFolder, file), err => {
+                    if (err) {
+                        res.status(500).send({
+                            statusMessage: "Could not delete Videos file",
+                            statusCode: -999
+                        });
+                    } else {
+                        fs.readdir(thumbnailsPathFolder, (err, files) => {
+                            // if (err) throw err;
+                            if (err) {
+                                res.status(500).send({
+                                    statusMessage: "Could not read Thumbnails folder",
+                                    statusCode: -999
+                                });
+                            } else {
+                                for (const file of files) {
+                                    fs.unlink(path.join(thumbnailsPathFolder, file), err => {
+                                        if (err) {
+                                            res.status(500).send({
+                                                statusMessage: "Could not delete Thumbnails file",
+                                                statusCode: -999
+                                            });
+                                        } else {
+                                            Video.deleteMany({})
+                                                .then(data => {
+                                                    res.send({
+                                                        statusMessage: `${data.deletedCount} Videos were deleted successfully!`,
+                                                        statusCode: 0
+                                                    });
+                                                })
+                                                .catch(err => {
+                                                    res.status(500).send({
+                                                        statusMessage:
+                                                            err.message || "Some error occurred while removing all Videos.",
+                                                        statusCode: -999
+                                                    });
+                                                });
+                                        }
+                                    });
+                                }
+                            }
+
+
+                        });
+                    }
+                });
+            }
+        }
+
+
+    });
+
+
+
+
 };
 
 // Find all membership Video
 exports.findAllMembership = (req, res) => {
     Video.find({ membership: true })
         .then(data => {
-            res.send(data);
+            res.send({
+                statusMessage: "Berhasil GET all membership Videos",
+                statusCode: 0,
+                data: data
+            });
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || "Some error occurred while retrieving Videos."
+                statusMessage:
+                    err.message || "Some error occurred while retrieving Videos.",
+                statusCode: 0,
             });
         });
 };
@@ -308,12 +400,17 @@ exports.findAllMembership = (req, res) => {
 exports.findAllCategoried = (req, res) => {
     Video.find({ category: req.query.category })
         .then(data => {
-            res.send(data);
+            res.send({
+                statusMessage: "Berhasil GET all categorized Videos",
+                statusCode: 0,
+                data: data
+            });
         })
         .catch(err => {
             res.status(500).send({
-                message:
-                    err.message || "Some error occurred while retrieving Videos."
+                statusMessage:
+                    err.message || "Some error occurred while retrieving Videos.",
+                statusCode: 0,
             });
         });
 };
