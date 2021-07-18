@@ -124,7 +124,7 @@ exports.findOne = (req, res) => {
             res
                 .status(500)
                 .send({
-                    tatusMessage: "Error retrieving Video with id=" + id,
+                    statusMessage: "Error retrieving Video with id=" + id,
                     statusCode: -999,
                 });
         });
@@ -133,7 +133,7 @@ exports.findOne = (req, res) => {
 // Update a Video by the id in the request
 exports.update = (req, res) => {
     if (!req.body) {
-        res.status(400).send({
+        return res.status(400).send({
             statusMessage:
                 "Content Cannot be empty",
             statusCode: -999
@@ -206,24 +206,28 @@ exports.update = (req, res) => {
                                                             });
                                                             console.log("Error while saving new thumbnail file : " + err);
                                                         } else {
-                                                            Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                                                                .then(data => {
-                                                                    if (!data) {
-                                                                        res.status(404).send({
-                                                                            statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
-                                                                            statusCode: -999
-                                                                        });
-                                                                    } else res.send({
-                                                                        statusMessage: `Video with id=${id} was updated successfully`,
-                                                                        statusCode: 0
-                                                                    });
-                                                                })
-                                                                .catch(err => {
-                                                                    res.status(500).send({
-                                                                        statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
-                                                                        statusCode: -999
-                                                                    });
-                                                                });
+                                                            res.send({
+                                                                statusMessage: `Video with id=${id} was updated successfully`,
+                                                                statusCode: 0
+                                                            });
+                                                            // Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                                                            //     .then(data => {
+                                                            //         if (!data) {
+                                                            //             res.status(404).send({
+                                                            //                 statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
+                                                            //                 statusCode: -999
+                                                            //             });
+                                                            //         } else res.send({
+                                                            //             statusMessage: `Video with id=${id} was updated successfully`,
+                                                            //             statusCode: 0
+                                                            //         });
+                                                            //     })
+                                                            //     .catch(err => {
+                                                            //         res.status(500).send({
+                                                            //             statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
+                                                            //             statusCode: -999
+                                                            //         });
+                                                            //     });
                                                         }
                                                     });
                                                     // Save Video in the database
