@@ -4,7 +4,7 @@ const Category = db.category;
 // Create and Save a new Tutorial
 exports.create = (req, res) => {
     // Validate request
-    if (!req.body.title) {
+    if (!req.body) {
         res.status(400).send({
             statusMessage:
                 "Content Cannot be empty",
@@ -41,7 +41,7 @@ exports.findAll = (req, res) => {
     const name = req.query.name;
     var condition = name ? { name: { $regex: new RegExp(title), $options: "i" } } : {};
 
-    Video.find(condition)
+    Category.find(condition)
         .then(data => {
             res.send({
                 statusMessage: "Berhasil GET all Categories",
@@ -61,7 +61,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
     const id = req.params.id;
 
-    Video.findById(id)
+    Category.findById(id)
         .then(data => {
             if (!data)
                 res.status(404).send({
@@ -98,7 +98,7 @@ exports.update = (req, res) => {
 
     const id = req.params.id;
 
-    Tutorial.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
         .then(data => {
             if (!data) {
                 res.status(404).send({
