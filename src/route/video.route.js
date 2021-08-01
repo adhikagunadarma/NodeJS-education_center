@@ -19,6 +19,9 @@ module.exports = app => {
     // Retrieve a single Tutorial with id
     router.get("/video/:id", videos.findOne);
 
+        // Stream Single Video
+    router.get("/video/stream/:id", videos.streamVideo);
+
     // Update a Tutorial with id
     router.put("/video/:id", videos.update);
 
