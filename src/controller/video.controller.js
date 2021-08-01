@@ -24,7 +24,7 @@ exports.create = (req, res) => {
     const video = new Video({
         title: req.body.title,
         description: req.body.description,
-        videoFile: req.body.videoFile,
+        // videoFile: req.body.videoFile, // teralu gede untuk disimpen di db
         videoThumbnail: req.body.videoThumbnail,
         videoFileName: req.body.videoFileName,
         videoThumbnailName: req.body.videoThumbnailName,
@@ -88,6 +88,7 @@ exports.findAll = (req, res) => {
 
     Video.find(condition)
         .then(data => {
+            data.videoFile = ""
             res.send({
                 statusMessage: "Berhasil GET all Videos",
                 statusCode: 0,
@@ -125,6 +126,63 @@ exports.findOne = (req, res) => {
                 .status(500)
                 .send({
                     statusMessage: "Error retrieving Video with id=" + id,
+                    statusCode: -999,
+                });
+        });
+};
+
+// Find a single Video with an id
+exports.streamVideo = (req, res) => {
+    const id = req.params.id;
+
+    Video.findById(id)
+        .then(data => {
+            if (!data)
+                res.status(404).send({
+                    statusMessage: "Cannot Stream video with id " + id,
+                    statusCode: -999,
+                });
+            else {
+                const videoPath = videosPathFolder + data.videoFileName;
+                const videoStat = fs.statSync(videoPath);
+                const fileSize = videoStat.size;
+                const videoRange = req.headers.range;
+                if (videoRange) {
+                    const parts = videoRange.replace(/bytes=/, "").split("-");
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1]
+                        ? parseInt(parts[1], 10)
+                        : fileSize-1;
+                    const chunksize = (end-start) + 1;
+                    const file = fs.createReadStream(videoPath, {start, end});
+                    const head = {
+                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': chunksize,
+                        'Content-Type': 'video/mp4',
+                    };
+                    res.writeHead(206, head);
+                    file.pipe(res);
+                } else {
+                    const head = {
+                        'Content-Length': fileSize,
+                        'Content-Type': 'video/mp4',
+                    };
+                    res.writeHead(200, head);
+                    fs.createReadStream(videoPath).pipe(res);
+                }
+                // res.send({
+                //     statusMessage: "Berhasil get Video with id " + id,
+                //     statusCode: 0,
+                //     data: data
+                // });
+            }
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Cannot Stream video with id " + id,
                     statusCode: -999,
                 });
         });
