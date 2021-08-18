@@ -14,8 +14,10 @@ exports.create = (req, res) => {
 
     // Create a Tutorial
     const category = new Category({
-        name: req.body.name,
-        description: req.body.description,
+        categoryName: req.body.name,
+        categoryDescription: req.body.description,
+        categoryThumbnail: req.body.thumbnail,
+
     });
 
     // Save Tutorial in the database
@@ -24,7 +26,7 @@ exports.create = (req, res) => {
         .then(data => {
             res.status(200).send({
                 statusMessage:
-                    "Sukses Membuat Category",
+                    "Category " + req.body.name + " has been created",
                 statusCode: 0
             });
         })
@@ -39,12 +41,12 @@ exports.create = (req, res) => {
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
     const name = req.query.name;
-    var condition = name ? { name: { $regex: new RegExp(title), $options: "i" } } : {};
+    var condition = name ? { categoryName: { $regex: new RegExp(title), $options: "i" } } : {};
 
     Category.find(condition)
         .then(data => {
             res.send({
-                statusMessage: "Berhasil GET all Categories",
+                statusMessage: "Success at fetching all categories",
                 statusCode: 0,
                 data: data
             });
@@ -70,7 +72,7 @@ exports.findOne = (req, res) => {
                 });
             else {
                 res.send({
-                    statusMessage: "Berhasil get Category with id " + id,
+                    statusMessage: "Success at fetching category with id " + id,
                     statusCode: 0,
                     data: data
                 });
@@ -133,7 +135,7 @@ exports.delete = (req, res) => {
                 });
             } else {
                 res.send({
-                    statusMessage: "Category with id=" + id + ",was deleted successfully!",
+                    statusMessage: "Category " + data.categoryName + " was deleted successfully!",
                     statusCode: 0
                 });
             }
