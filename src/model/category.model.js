@@ -3,8 +3,8 @@ module.exports = mongoose => {
     var schema = mongoose.Schema(
         {
             categoryName: String,
-            categoryDescription: String,
-            categoryThumbnail : String,
+            categoryDescription: String ,
+            categoryThumbnail : String ,
 
         },
         { timestamps: true }

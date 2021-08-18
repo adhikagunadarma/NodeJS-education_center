@@ -15,8 +15,8 @@ exports.create = (req, res) => {
     // Create a Tutorial
     const category = new Category({
         categoryName: req.body.name,
-        categoryDescription: req.body.description,
-        categoryThumbnail: req.body.thumbnail,
+        categoryDescription: req.body.description ?? null,
+        categoryThumbnail: req.body.thumbnail ?? null,
 
     });
 
