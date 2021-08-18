@@ -3,23 +3,23 @@ module.exports = app => {
 
     var router = require("express").Router();
 
-    // Create a new Tutorial
+    // Create a new category
     router.post("/category", categories.create);
 
-    // Retrieve all videos
+    // Retrieve all categories
     router.get("/categories", categories.findAll);
 
 
-    // Retrieve a single Tutorial with id
+    // Retrieve a single category with id
     router.get("/category/:id", categories.findOne);
 
-    // Update a Tutorial with id
+    // Update a category with id
     router.put("/category/:id", categories.update);
 
-    // Delete a Tutorial with id
+    // Delete a category with id
     router.delete("/category/:id", categories.delete);
 
-    // Create a new Tutorial
+    // Create a new category
     router.delete("/category", categories.deleteAll);
 
     app.use('/api/educen', router);
