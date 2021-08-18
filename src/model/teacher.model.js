@@ -8,6 +8,7 @@ module.exports = mongoose => {
             teacherEmail : String,
             teacherPhone : String,
             teacherBirthday : String,
+            teacherStatus : Number, //1 active, 0 notactive(resign or something)
             teacherUsertype : Number, //1 su // 2 normal
 
         },
