@@ -8,9 +8,7 @@ module.exports = mongoose => {
             videoFileName: String,
             videoThumbnail: String,
             videoThumbnailName: String,
-            category: String,
-            published: Boolean,
-            membership: Boolean,
+            courseName: String,
             totalViews: Number
         },
         { timestamps: true }
