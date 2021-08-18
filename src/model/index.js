@@ -8,5 +8,6 @@ db.mongoose = mongoose;
 db.url = dbConfig.url;
 db.video = require("./video.model.js")(mongoose);
 db.category = require("./category.model.js")(mongoose);
+db.course = require("./course.model.js")(mongoose);
 
 module.exports = db;
