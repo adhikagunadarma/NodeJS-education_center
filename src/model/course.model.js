@@ -11,7 +11,7 @@ module.exports = mongoose => {
             courseTotalBought : Number,
             courseMembership : Boolean,
             coursePublished : Boolean,
-            courseTeacherName: String,
+            courseTeacher: String,
         },
         { timestamps: true }
     );
