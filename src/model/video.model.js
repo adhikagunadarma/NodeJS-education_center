@@ -2,14 +2,14 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema(
         {
-            title: String,
-            description: String,
+            videoTitle: String,
+            videoDescription: String,
             videoFile: String,
             videoFileName: String,
             videoThumbnail: String,
             videoThumbnailName: String,
-            courseName: String,
-            totalViews: Number
+            videoCourseName: String,
+            videoTotalViews: Number
         },
         { timestamps: true }
     );
