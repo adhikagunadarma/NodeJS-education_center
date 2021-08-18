@@ -14,9 +14,9 @@ exports.create = (req, res) => {
 
     // Create a Tutorial
     const category = new Category({
-        categoryName: req.body.name,
-        categoryDescription: req.body.description ?? null,
-        categoryThumbnail: req.body.thumbnail ?? null,
+        categoryName: req.body.categoryName,
+        categoryDescription: req.body.categoryDescription ?? null,
+        categoryThumbnail: req.body.categoryThumbnail ?? null,
 
     });
 
@@ -40,7 +40,7 @@ exports.create = (req, res) => {
 
 // Retrieve all Tutorials from the database.
 exports.findAll = (req, res) => {
-    const name = req.query.name;
+    const name = req.query.categoryName;
     var condition = name ? { categoryName: { $regex: new RegExp(title), $options: "i" } } : {};
 
     Category.find(condition)
@@ -153,7 +153,7 @@ exports.deleteAll = (req, res) => {
     Category.deleteMany({})
         .then(data => {
             res.send({
-                statusMessage: `${data.deletedCount} Categories were deleted successfully!`,
+                statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
                 statusCode: 0
             });
         })
