@@ -9,12 +9,16 @@ module.exports = app => {
     // Retrieve all videos
     router.get("/videos", videos.findAll);
 
-    // Retrieve all membership videos
-    router.get("/videos/membership/", videos.findAllMembership);
+       // Retrieve all videos by course
+    router.get("/videos/course/:id", videos.findAllByCourse);
 
 
-    // Retrieve all categoried videos
-    router.get("/videos/category/", videos.findAllCategoried);
+    // // Retrieve all membership videos
+    // router.get("/videos/membership/", videos.findAllMembership);
+
+
+    // // Retrieve all categoried videos
+    // router.get("/videos/category/", videos.findAllCategoried);
 
     // Retrieve a single Tutorial with id
     router.get("/video/:id", videos.findOne);
@@ -28,8 +32,11 @@ module.exports = app => {
     // Delete a Tutorial with id
     router.delete("/video/:id", videos.delete);
 
-    // Create a new Tutorial
+    // Delete all videos
     router.delete("/video", videos.deleteAll);
+
+    // Delete all videos by course Id
+    router.delete("/video/course/:id", videos.deleteAllByCourse);
 
     app.use('/api/educen', router);
 };

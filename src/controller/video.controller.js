@@ -1,12 +1,13 @@
 const db = require("../model");
-const videosPathFolder = './assets/videos/';
-const thumbnailsPathFolder = './assets/thumbnails/';
+const videosPathFolder = './assets/video/videos/';
+const thumbnailsPathFolder = './assets/video/thumbnails/';
 
 // const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
 const path = require('path');
 
 const Video = db.video;
+const Course = db.course;
 
 // Create and Save a new Video
 exports.create = (req, res) => {
@@ -102,6 +103,14 @@ exports.findAll = (req, res) => {
             });
         });
 };
+
+// Find a all Video by course id
+exports.findAllByCourse = (req, res) => {
+    const id = req.params.id;
+
+   
+};
+
 // Find a single Video with an id
 exports.findOne = (req, res) => {
     const id = req.params.id;
@@ -131,7 +140,7 @@ exports.findOne = (req, res) => {
         });
 };
 
-// Find a single Video with an id
+// Stream a single Video with an id
 exports.streamVideo = (req, res) => {
     const id = req.params.id;
 
@@ -439,40 +448,47 @@ exports.deleteAll = (req, res) => {
 
 };
 
-// Find all membership Video
-exports.findAllMembership = (req, res) => {
-    Video.find({ membership: true })
-        .then(data => {
-            res.send({
-                statusMessage: "Berhasil GET all membership Videos",
-                statusCode: 0,
-                data: data
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                statusMessage:
-                    err.message || "Some error occurred while retrieving Videos.",
-                statusCode: 0,
-            });
-        });
+// Delete all Video by course id
+exports.deleteAllByCourse = (req, res) => {
+    const id = req.params.id;
+
+   
 };
 
-// Find all Categoried Video
-exports.findAllCategoried = (req, res) => {
-    Video.find({ category: req.query.category })
-        .then(data => {
-            res.send({
-                statusMessage: "Berhasil GET all categorized Videos",
-                statusCode: 0,
-                data: data
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                statusMessage:
-                    err.message || "Some error occurred while retrieving Videos.",
-                statusCode: 0,
-            });
-        });
-};
+// // Find all membership Video
+// exports.findAllMembership = (req, res) => {
+//     Video.find({ membership: true })
+//         .then(data => {
+//             res.send({
+//                 statusMessage: "Berhasil GET all membership Videos",
+//                 statusCode: 0,
+//                 data: data
+//             });
+//         })
+//         .catch(err => {
+//             res.status(500).send({
+//                 statusMessage:
+//                     err.message || "Some error occurred while retrieving Videos.",
+//                 statusCode: 0,
+//             });
+//         });
+// };
+
+// // Find all Categoried Video
+// exports.findAllCategoried = (req, res) => {
+//     Video.find({ category: req.query.category })
+//         .then(data => {
+//             res.send({
+//                 statusMessage: "Berhasil GET all categorized Videos",
+//                 statusCode: 0,
+//                 data: data
+//             });
+//         })
+//         .catch(err => {
+//             res.status(500).send({
+//                 statusMessage:
+//                     err.message || "Some error occurred while retrieving Videos.",
+//                 statusCode: 0,
+//             });
+//         });
+// };
