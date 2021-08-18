@@ -5,6 +5,7 @@ module.exports = mongoose => {
             categoryName: String,
             categoryDescription: String ,
             categoryThumbnail : String ,
+            categoryThumbnailName : String,
 
         },
         { timestamps: true }

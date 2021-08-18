@@ -17,7 +17,7 @@ exports.create = (req, res) => {
         categoryName: req.body.categoryName,
         categoryDescription: req.body.categoryDescription ?? null,
         categoryThumbnail: req.body.categoryThumbnail ?? null,
-
+        categoryThumbnailName: req.body.categoryThumbnailName ?? null
     });
 
     // Save Tutorial in the database
