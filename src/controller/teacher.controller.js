@@ -239,8 +239,77 @@ exports.changePass = async(req, res) => {
             statusCode: -999
         });
     }
+
+    const username = req.body.teacherUsername;
     
-    const hashedPassword = await security.hashPassword(req.body.teacherPassword)
+    var condition =  { teacherUsername: username } ;
+
+    Teacher.find(condition)
+    // Teacher.find({}).select('teacherUsername teacherPassword -_id')
+        .then(async(data) => {
+            if (data.length === 0){
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found teacher with teacherUsername " + username,
+                    statusCode: -999,
+                });
+            }
+           
+            else {
+                // console.log(data)
+                const checkPassword = await security.comparePassword(req.body.teacherPassword,data[0].teacherPassword)
+           
+                if (checkPassword){
+                    // res.send({
+                    //     statusMessage: "Login Succeed",
+                    //     statusCode: 0,
+                    //     data: data
+                    // });
+                    
+                    const hashedNewPassword = await security.hashPassword(req.body.teacherNewPassword)
+                    const id = data[0].id;
+                    req.body.teacherPassword = hashedNewPassword
+
+                    Teacher.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                        .then(data => {
+                            if (!data) {
+                                res.status(404).send({
+                                    statusMessage: `Cannot update teacher with id=${id}. Maybe teacher was not found!`,
+                                    statusCode: -999
+                                });
+                            } else {
+                                res.send({
+                                    statusMessage: `Data Password for teacher ${data.teacherName} was updated successfully`,
+                                    statusCode: 0
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                statusMessage: "Error updating Teacher with id=" + id + ". Error : " + err.message,
+                                statusCode: -999
+                            });
+                        });
+
+                }
+                else{
+                    res.send({
+                        statusMessage: "Wrong password, please try again",
+                        statusCode: -999,
+                });
+                }
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Error retrieving teacher with username =" + username,
+                    statusCode: -999,
+                });
+        });
     
+ 
+
 };
 
