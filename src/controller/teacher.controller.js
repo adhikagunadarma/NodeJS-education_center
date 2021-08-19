@@ -1,8 +1,9 @@
 const db = require("../model");
+const security = require("../utils/security.js");
 const Teacher = db.teacher;
 
 // Create and Save a new Tutorial
-exports.create = (req, res) => {
+exports.create = async(req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -11,11 +12,12 @@ exports.create = (req, res) => {
             statusCode: -999
         });
     }
-
+    
+    const hashedPassword = await security.hashPassword(req.body.teacherPassword)
     // Create a Tutorial
     const teacher = new Teacher({
         teacherUsername: req.body.teacherUsername,
-        teacherPassword: req.body.teacherPassword, // need to encrypt this later on
+        teacherPassword: hashedPassword, // need to encrypt this later on
         teacherName: req.body.teacherName ,
         teacherEmail: req.body.teacherEmail ?? null,
         teacherPhone: req.body.teacherPhone ?? null,
