@@ -2,7 +2,7 @@ const db = require("../model");
 const security = require("../utils/security.js");
 const Teacher = db.teacher;
 
-// Create and Save a new Tutorial
+// Create and Save a new Teacher
 exports.create = async(req, res) => {
     // Validate request
     if (!req.body) {
@@ -14,7 +14,7 @@ exports.create = async(req, res) => {
     }
     
     const hashedPassword = await security.hashPassword(req.body.teacherPassword)
-    // Create a Tutorial
+    // Create a Teacher
     const teacher = new Teacher({
         teacherUsername: req.body.teacherUsername,
         teacherPassword: hashedPassword, // need to encrypt this later on
@@ -132,7 +132,7 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     const id = req.params.id;
 
-    Category.findByIdAndRemove(id)
+    Teacher.findByIdAndRemove(id)
         .then(data => {
             if (!data) {
                 res.status(404).send({
@@ -154,9 +154,9 @@ exports.delete = (req, res) => {
         });
 };
 
-// Delete all Tutorials from the database.
+// Delete all Teachers from the database.
 exports.deleteAll = (req, res) => {
-    Category.deleteMany({})
+    Teacher.deleteMany({})
         .then(data => {
             res.send({
                 statusMessage: `${data.deletedCount} teachers were successfully deleted!`,
@@ -170,5 +170,77 @@ exports.deleteAll = (req, res) => {
                 statusCode: -999
             });
         });
+};
+
+// Login teacher
+exports.login = async(req, res) => {
+    // Validate request
+    if (!req.body) {
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+
+    const username = req.body.teacherUsername;
+    
+    var condition =  { teacherUsername: username } ;
+
+    Teacher.find(condition)
+    // Teacher.find({}).select('teacherUsername teacherPassword -_id')
+        .then(async(data) => {
+            if (data.length === 0){
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found teacher with teacherUsername " + username,
+                    statusCode: -999,
+                });
+            }
+           
+            else {
+                console.log(data)
+                const checkPassword = await security.comparePassword(req.body.teacherPassword,data[0].teacherPassword)
+           
+                if (checkPassword){
+                    res.send({
+                    statusMessage: "Login Succeed",
+                    statusCode: 0,
+                    data: data
+                });
+                }
+                else{
+                    res.send({
+                        statusMessage: "Login failed, please try again",
+                        statusCode: -999,
+                });
+                }
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Error retrieving teacher with username =" + username,
+                    statusCode: -999,
+                });
+        });
+    
+ 
+
+};
+
+exports.changePass = async(req, res) => {
+    // Validate request
+    if (!req.body) {
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+    
+    const hashedPassword = await security.hashPassword(req.body.teacherPassword)
+    
 };
 

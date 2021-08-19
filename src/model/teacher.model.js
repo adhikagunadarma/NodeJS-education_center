@@ -2,7 +2,7 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema(
         {
-            teacherUsername: String,
+            teacherUsername: { type : String , unique : true, required : true},
             teacherPassword : String,
             teacherName: String,
             teacherEmail : String,
@@ -18,6 +18,7 @@ module.exports = mongoose => {
     schema.method("toJSON", function () {
         const { __v, _id, ...object } = this.toObject();
         object.id = _id;
+        delete object.teacherPassword
         return object;
     });
 
