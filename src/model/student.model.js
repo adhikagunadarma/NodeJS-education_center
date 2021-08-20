@@ -9,7 +9,7 @@ module.exports = mongoose => {
             studentPhone : String,
             studentBirthday : String,
             studentMembership : Boolean, //for accessing course if only payment system is subscription
-            studentStatus : Number, //1 active, 0 notactive(dead or something) test something
+            studentStatus : Number, //1 active, 0 notactive(dead or something) test something againig
         },
         { timestamps: true }
     );
