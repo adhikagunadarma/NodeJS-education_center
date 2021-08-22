@@ -17,6 +17,8 @@ module.exports = mongoose => {
     schema.method("toJSON", function () {
         const { __v, _id, ...object } = this.toObject();
         object.id = _id;
+        
+        delete object.studentPassword
         return object;
     });
 
