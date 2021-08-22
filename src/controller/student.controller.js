@@ -189,7 +189,7 @@ exports.login = async(req, res) => {
     
     var condition =  { studentUsername: username } ;
 
-    Teacher.find(condition)
+    Student.find(condition)
         .then(async(data) => {
             if (data.length === 0){
                 res.status(404).send({
@@ -245,7 +245,7 @@ exports.changePass = async(req, res) => {
     
     var condition =  { studentUsername: username } ;
 
-    Teacher.find(condition)
+    Student.find(condition)
         .then(async(data) => {
             if (data.length === 0){
                 res.status(404).send({
@@ -259,11 +259,11 @@ exports.changePass = async(req, res) => {
            
                 if (checkPassword){
                     
-                    const hashedNewPassword = await security.hashPassword(req.body.studentPassword)
+                    const hashedNewPassword = await security.hashPassword(req.body.studentNewPassword)
                     const id = data[0].id;
                     req.body.studentPassword = hashedNewPassword
 
-                    Teacher.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                    Student.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
                         .then(data => {
                             if (!data) {
                                 res.status(404).send({
