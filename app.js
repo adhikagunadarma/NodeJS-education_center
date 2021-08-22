@@ -39,6 +39,7 @@ db.mongoose
 // });
 
 
+require("./src/route/student.route")(app);
 require("./src/route/teacher.route")(app);
 require("./src/route/category.route")(app);
 require("./src/route/video.route")(app);
