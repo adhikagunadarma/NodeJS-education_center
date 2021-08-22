@@ -14,7 +14,7 @@ exports.create = async(req, res) => {
     }
     
     const hashedPassword = await security.hashPassword(req.body.studentPassword)
-    // Create a Teacher
+    // Create a Student
     const student = new Student({
         studentUsername: req.body.studentUsername,
         studentPassword: hashedPassword, 
@@ -26,7 +26,7 @@ exports.create = async(req, res) => {
         studentMembership: 0 // default not membership yet
     });
 
-    // Save teacher in the database
+    // Save student in the database
     student
         .save(student)
         .then(data => {
@@ -70,7 +70,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
     const id = req.params.id;
 
-    Teacher.findById(id)
+    Student.findById(id)
         .then(data => {
             if (!data)
                 res.status(404).send({
@@ -125,6 +125,50 @@ exports.update = (req, res) => {
         .catch(err => {
             res.status(500).send({
                 statusMessage: "Error updating student with id=" + id + ". Error : " + err.message,
+                statusCode: -999
+            });
+        });
+};
+
+// Delete a student with the specified id in the request
+exports.delete = (req, res) => {
+    const id = req.params.id;
+
+    Student.findByIdAndRemove(id)
+        .then(data => {
+            if (!data) {
+                res.status(404).send({
+                    statusMessage: `Cannot delete student with id=${id}. Maybe student was not found!`,
+                    statusCode: -999
+                });
+            } else {
+                res.send({
+                    statusMessage: "Student " + data.studentName + " was deleted successfully!",
+                    statusCode: 0
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: "Could not delete student with id=" + id,
+                statusCode: -999
+            });
+        });
+};
+
+// Delete all students from the database.
+exports.deleteAll = (req, res) => {
+    Student.deleteMany({})
+        .then(data => {
+            res.send({
+                statusMessage: `${data.deletedCount} students were successfully deleted!`,
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage:
+                    err.message || "Some error occurred while removing all students.",
                 statusCode: -999
             });
         });
