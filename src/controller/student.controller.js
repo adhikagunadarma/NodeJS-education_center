@@ -231,3 +231,81 @@ exports.login = async(req, res) => {
 
 };
 
+exports.changePass = async(req, res) => {
+    // Validate request
+    if (!req.body) {
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+
+    const username = req.body.studentUsername;
+    
+    var condition =  { studentUsername: username } ;
+
+    Teacher.find(condition)
+        .then(async(data) => {
+            if (data.length === 0){
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found student with username " + username,
+                    statusCode: -999,
+                });
+            }
+           
+            else {
+                const checkPassword = await security.comparePassword(req.body.studentPassword,data[0].studentPassword)
+           
+                if (checkPassword){
+                    
+                    const hashedNewPassword = await security.hashPassword(req.body.studentPassword)
+                    const id = data[0].id;
+                    req.body.studentPassword = hashedNewPassword
+
+                    Teacher.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                        .then(data => {
+                            if (!data) {
+                                res.status(404).send({
+                                    statusMessage: `Cannot update student with id=${id}. Maybe student was not found!`,
+                                    statusCode: -999
+                                });
+                            } else {
+                                res.send({
+                                    statusMessage: `Data Password for student ${data.studentUsername} was updated successfully`,
+                                    statusCode: 0
+                                });
+                            }
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                statusMessage: "Error updating student with id=" + id + ". Error : " + err.message,
+                                statusCode: -999
+                            });
+                        });
+
+                }
+                else{
+                    res.send({
+                        statusMessage: "Wrong password, please try again",
+                        statusCode: -999,
+                });
+                }
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Error retrieving student with username =" + username,
+                    statusCode: -999,
+                });
+        });
+    
+ 
+
+};
+
+
+
