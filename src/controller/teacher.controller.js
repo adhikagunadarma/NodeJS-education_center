@@ -47,7 +47,8 @@ exports.create = async(req, res) => {
 // Retrieve all Teachers from the database.
 exports.findAll = (req, res) => {
     const name = req.query.teacherName;
-    var condition = name ? { teacherName: { $regex: new RegExp(title), $options: "i" } } : {};
+    //only get active teacher for findall
+    var condition = name ? { teacherName: { $regex: new RegExp(title), $options: "i" },teacherStatus : 1  } : { teacherStatus : 1};
 
     Teacher.find(condition)
         .then(data => {
