@@ -79,7 +79,7 @@ exports.findOne = (req, res) => {
                 });
             else {
                 res.send({
-                    statusMessage: "Succeed at fetching student " + data.teacherName,
+                    statusMessage: "Succeed at fetching student " + data.studentName,
                     statusCode: 0,
                     data: data
                 });
@@ -94,3 +94,39 @@ exports.findOne = (req, res) => {
                 });
         });
 };
+
+
+//use for changing data basic, active, membership of student
+exports.update = (req, res) => {
+    if (!req.body) {
+        return res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+
+    const id = req.params.id;
+
+    Student.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+        .then(data => {
+            if (!data) {
+                res.status(404).send({
+                    statusMessage: `Cannot update student with id=${id}. Maybe student was not found!`,
+                    statusCode: -999
+                });
+            } else {
+                res.send({
+                    statusMessage: `Student ${data.studentName} was updated successfully`,
+                    statusCode: 0
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: "Error updating student with id=" + id + ". Error : " + err.message,
+                statusCode: -999
+            });
+        });
+};
+
