@@ -2,7 +2,7 @@
 module.exports = mongoose => {
     var schema = mongoose.Schema(
         {
-            studentUsername: String,
+            studentUsername: { type : String , unique : true, required : true},
             studentPassword : String,
             studentName: String,
             studentEmail : String,

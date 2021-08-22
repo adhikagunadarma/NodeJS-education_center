@@ -174,3 +174,60 @@ exports.deleteAll = (req, res) => {
         });
 };
 
+// Login student
+exports.login = async(req, res) => {
+    // Validate request
+    if (!req.body) {
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+
+    const username = req.body.studentUsername;
+    
+    var condition =  { studentUsername: username } ;
+
+    Teacher.find(condition)
+        .then(async(data) => {
+            if (data.length === 0){
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found student with usename " + username,
+                    statusCode: -999,
+                });
+            }
+           
+            else {
+                // console.log(data)
+                const checkPassword = await security.comparePassword(req.body.studentPassword,data[0].studentPassword)
+           
+                if (checkPassword){
+                    res.send({
+                    statusMessage: "Login Succeed",
+                    statusCode: 0,
+                    data: data
+                });
+                }
+                else{
+                    res.send({
+                        statusMessage: "Login failed, please try again",
+                        statusCode: -999,
+                });
+                }
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Error retrieving student with username =" + username,
+                    statusCode: -999,
+                });
+        });
+    
+ 
+
+};
+
