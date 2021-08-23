@@ -1,4 +1,6 @@
 const db = require("../model");
+const thumbnailsPathFolder = './assets/category/thumbnails/';
+
 const Category = db.category;
 
 // Create and Save a new Tutorial
@@ -20,22 +22,58 @@ exports.create = (req, res) => {
         categoryThumbnailName: req.body.categoryThumbnailName ?? null
     });
 
-    // Save Tutorial in the database
-    category
-        .save(category)
-        .then(data => {
-            res.status(200).send({
-                statusMessage:
-                    "Category " + req.body.name + " has been created",
-                statusCode: 0
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                statusMessage: err.message || "Some error occurred while creating the Category.",
-                statusCode: -999,
-            });
+    if (req.body.categoryThumbnailName && req.body.categoryThumbnail) {
+        const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
+
+        fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
+
+            if (err) {
+                res.status(500).send({
+                    statusMessage:
+                        "Error while saving thumbnail file : " + err.message,
+
+                    statusCode: -999
+                });
+                console.log(err);
+            } else {
+                // Save category in the database
+                category
+                    .save(category)
+                    .then(data => {
+                        res.status(200).send({
+                            statusMessage:
+                                "Category " + req.body.categoryName + " has been created",
+                            statusCode: 0
+                        });
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            statusMessage: err.message || "Some error occurred while creating the Category.",
+                            statusCode: -999,
+                        });
+                    });
+            }
         });
+    } else {
+        category
+            .save(category)
+            .then(data => {
+                res.status(200).send({
+                    statusMessage:
+                        "Category " + req.body.categoryName + " has been created",
+                    statusCode: 0
+                });
+            })
+            .catch(err => {
+                res.status(500).send({
+                    statusMessage: err.message || "Some error occurred while creating the Category.",
+                    statusCode: -999,
+                });
+            });
+    }
+
+
+
 };
 
 // Retrieve all Tutorials from the database.
@@ -100,26 +138,98 @@ exports.update = (req, res) => {
 
     const id = req.params.id;
 
-    Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    //delete category existing first
+    Category.findById(id)
         .then(data => {
-            if (!data) {
+            // console.log(data)
+            if (!data)
                 res.status(404).send({
-                    statusMessage: `Cannot update Category with id=${id}. Maybe Category was not found!`,
+                    statusMessage:
+                        "Not found Video with id " + id,
                     statusCode: -999
                 });
-            } else {
-                res.send({
-                    statusMessage: `Category with id=${id} was updated successfully`,
-                    statusCode: 0
+            else {
+
+
+                fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
+                    if (err) {
+                        res.status(500).send({
+                            statusMessage:
+                                "Error while deleting category thumbnail file : " + err.message,
+                            statusCode: -999
+                        });
+                        console.log("Error while deleting category thumbnail file : " + err);
+                    } else {
+                        Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                            .then(data => {
+                                if (!data) {
+                                    res.status(404).send({
+                                        statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
+                                        statusCode: -999
+                                    });
+                                } else {
+                                    // setelah di delete filenya, baru save ulang
+                                    const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
+
+                                    // res.set('Location', userFiles + file.name);
+                                    fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                                        if (err) {
+                                            res.status(500).send({
+                                                statusMessage:
+                                                    "Error while saving new category thumbnail file : " + err.message,
+                                                statusCode: -999
+                                            });
+                                            console.log("Error while saving new category thumbnail file : " + err);
+                                        } else {
+                                            res.send({
+                                                statusMessage: `Thumbnail with id=${id} was updated successfully`,
+                                                statusCode: 0
+                                            });
+
+                                        }
+                                    });
+
+                                }
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
+                                    statusCode: -999
+                                });
+                            });
+                    }
                 });
+
             }
         })
         .catch(err => {
             res.status(500).send({
-                statusMessage: "Error updating Category with id=" + id + ". Error : " + err.message,
+                statusMessage: "Error updating Video. Error : " + err.message,
                 statusCode: -999
             });
         });
+
+
+    // Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+    //     .then(data => {
+    //         if (!data) {
+    //             res.status(404).send({
+    //                 statusMessage: `Cannot update Category with id=${id}. Maybe Category was not found!`,
+    //                 statusCode: -999
+    //             });
+    //         } else {
+    //             res.send({
+    //                 statusMessage: `Category with id=${id} was updated successfully`,
+    //                 statusCode: 0
+    //             });
+    //         }
+    //     })
+    //     .catch(err => {
+    //         res.status(500).send({
+    //             statusMessage: "Error updating Category with id=" + id + ". Error : " + err.message,
+    //             statusCode: -999
+    //         });
+    //     });
 };
 
 // Delete a Tutorial with the specified id in the request
@@ -134,10 +244,30 @@ exports.delete = (req, res) => {
                     statusCode: -999
                 });
             } else {
-                res.send({
-                    statusMessage: "Category " + data.categoryName + " was deleted successfully!",
-                    statusCode: 0
-                });
+                if (data.categoryThumbnailName != null) {
+                    fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete thumbnail video with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                        } else {
+                            // kalo sukses
+                            res.send({
+                                statusMessage: "Category " + data.categoryName + " was deleted successfully!",
+                                statusCode: 0
+                            });
+                        }
+                    });
+                } else {
+                    res.send({
+                        statusMessage: "Category " + data.categoryName + " was deleted successfully!",
+                        statusCode: 0
+                    });
+                }
+
+
             }
         })
         .catch(err => {
@@ -150,19 +280,50 @@ exports.delete = (req, res) => {
 
 // Delete all Tutorials from the database.
 exports.deleteAll = (req, res) => {
-    Category.deleteMany({})
-        .then(data => {
-            res.send({
-                statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
-                statusCode: 0
-            });
-        })
-        .catch(err => {
+
+
+    fs.readdir(thumbnailsPathFolder, (err, files) => {
+        // if (err) throw err;
+        if (err) {
             res.status(500).send({
-                statusMessage:
-                    err.message || "Some error occurred while removing all Categories.",
+                statusMessage: "Could not read Thumbnails folder",
                 statusCode: -999
             });
-        });
+        } else {
+            for (const file of files) {
+                fs.unlink(path.join(thumbnailsPathFolder, file), err => {
+                    if (err) {
+                        res.status(500).send({
+                            statusMessage: "Could not delete Thumbnails file",
+                            statusCode: -999
+                        });
+                    } else {
+
+                        Category.deleteMany({})
+                            .then(data => {
+                                res.send({
+                                    statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
+                                    statusCode: 0
+                                });
+                            })
+                            .catch(err => {
+                                res.status(500).send({
+                                    statusMessage:
+                                        err.message || "Some error occurred while removing all Categories.",
+                                    statusCode: -999
+                                });
+                            });
+                    }
+                });
+            }
+        }
+
+
+    });
+
+
+
+
+
 };
 
