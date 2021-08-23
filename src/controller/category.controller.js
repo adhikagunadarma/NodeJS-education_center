@@ -153,25 +153,66 @@ exports.update = (req, res) => {
                     statusCode: -999
                 });
             else {
+                if (data.categoryThumbnailName != null && data.categoryThumbnail != null) {
+                    fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while deleting category thumbnail file : " + err.message,
+                                statusCode: -999
+                            });
+                            console.log("Error while deleting category thumbnail file : " + err);
+                        } else {
+                            Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                                .then(data => {
+                                    if (!data) {
+                                        res.status(404).send({
+                                            statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
+                                            statusCode: -999
+                                        });
+                                    } else {
+                                        // setelah di delete filenya, baru save ulang
+                                        const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
 
+                                        // res.set('Location', userFiles + file.name);
+                                        fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                                            if (err) {
+                                                res.status(500).send({
+                                                    statusMessage:
+                                                        "Error while saving new category thumbnail file : " + err.message,
+                                                    statusCode: -999
+                                                });
+                                                console.log("Error while saving new category thumbnail file : " + err);
+                                            } else {
+                                                res.send({
+                                                    statusMessage: `Thumbnail with id=${id} was updated successfully`,
+                                                    statusCode: 0
+                                                });
 
-                fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
-                    if (err) {
-                        res.status(500).send({
-                            statusMessage:
-                                "Error while deleting category thumbnail file : " + err.message,
-                            statusCode: -999
-                        });
-                        console.log("Error while deleting category thumbnail file : " + err);
-                    } else {
-                        Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                            .then(data => {
-                                if (!data) {
-                                    res.status(404).send({
-                                        statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
+                                            }
+                                        });
+
+                                    }
+                                })
+                                .catch(err => {
+                                    res.status(500).send({
+                                        statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
                                         statusCode: -999
                                     });
-                                } else {
+                                });
+                        }
+                    });
+                } else {
+                    Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                        .then(data => {
+                            if (!data) {
+                                res.status(404).send({
+                                    statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
+                                    statusCode: -999
+                                });
+                            } else {
+
+                                if (req.body.categoryThumbnail && req.body.categoryThumbnailName) {
                                     // setelah di delete filenya, baru save ulang
                                     const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
 
@@ -192,17 +233,25 @@ exports.update = (req, res) => {
 
                                         }
                                     });
-
+                                } else {
+                                    res.send({
+                                        statusMessage: `Thumbnail with id=${id} was updated successfully`,
+                                        statusCode: 0
+                                    });
                                 }
-                            })
-                            .catch(err => {
-                                res.status(500).send({
-                                    statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
-                                    statusCode: -999
-                                });
+
+
+                            }
+                        })
+                        .catch(err => {
+                            res.status(500).send({
+                                statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
+                                statusCode: -999
                             });
-                    }
-                });
+                        });
+                }
+
+
 
             }
         })
