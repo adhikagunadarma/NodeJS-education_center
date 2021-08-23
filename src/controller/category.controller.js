@@ -354,32 +354,50 @@ exports.deleteAll = (req, res) => {
                 statusCode: -999
             });
         } else {
-            for (const file of files) {
-                fs.unlink(path.join(thumbnailsPathFolder, file), err => {
-                    if (err) {
+            if (files.length < 1) {
+                Category.deleteMany({})
+                    .then(data => {
+                        res.send({
+                            statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
+                            statusCode: 0
+                        });
+                    })
+                    .catch(err => {
                         res.status(500).send({
-                            statusMessage: "Could not delete Thumbnails file",
+                            statusMessage:
+                                err.message || "Some error occurred while removing all Categories.",
                             statusCode: -999
                         });
-                    } else {
-
-                        Category.deleteMany({})
-                            .then(data => {
-                                res.send({
-                                    statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
-                                    statusCode: 0
-                                });
-                            })
-                            .catch(err => {
-                                res.status(500).send({
-                                    statusMessage:
-                                        err.message || "Some error occurred while removing all Categories.",
-                                    statusCode: -999
-                                });
+                    });
+            } else {
+                for (const file of files) {
+                    fs.unlink(path.join(thumbnailsPathFolder, file), err => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Could not delete Thumbnails file",
+                                statusCode: -999
                             });
-                    }
-                });
+                        } else {
+
+                            Category.deleteMany({})
+                                .then(data => {
+                                    res.send({
+                                        statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
+                                        statusCode: 0
+                                    });
+                                })
+                                .catch(err => {
+                                    res.status(500).send({
+                                        statusMessage:
+                                            err.message || "Some error occurred while removing all Categories.",
+                                        statusCode: -999
+                                    });
+                                });
+                        }
+                    });
+                }
             }
+
         }
 
 
