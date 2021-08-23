@@ -1,5 +1,9 @@
 const db = require("../model");
-const thumbnailsPathFolder = './assets/category/thumbnails/';
+const thumbnailsPathFolder = './assets/category/thumbnails';
+
+const fs = require('fs');
+const path = require('path');
+
 
 const Category = db.category;
 
@@ -145,7 +149,7 @@ exports.update = (req, res) => {
             if (!data)
                 res.status(404).send({
                     statusMessage:
-                        "Not found Video with id " + id,
+                        "Not found category with id " + id,
                     statusCode: -999
                 });
             else {
@@ -193,7 +197,7 @@ exports.update = (req, res) => {
                             })
                             .catch(err => {
                                 res.status(500).send({
-                                    statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
+                                    statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
                                     statusCode: -999
                                 });
                             });
@@ -204,7 +208,7 @@ exports.update = (req, res) => {
         })
         .catch(err => {
             res.status(500).send({
-                statusMessage: "Error updating Video. Error : " + err.message,
+                statusMessage: "Error updating category. Error : " + err.message,
                 statusCode: -999
             });
         });
@@ -248,7 +252,7 @@ exports.delete = (req, res) => {
                     fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
                         if (err) {
                             res.status(500).send({
-                                statusMessage: "Cannot Delete thumbnail video with id=" + id,
+                                statusMessage: "Cannot Delete thumbnail category with id=" + id,
                                 statusCode: -999
                             });
                             console.log(err);
