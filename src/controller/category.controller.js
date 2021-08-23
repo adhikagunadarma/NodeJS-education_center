@@ -1,5 +1,5 @@
 const db = require("../model");
-const thumbnailsPathFolder = './assets/category/thumbnails';
+const thumbnailsPathFolder = './assets/category/thumbnails/';
 
 const fs = require('fs');
 const path = require('path');
@@ -163,6 +163,8 @@ exports.update = (req, res) => {
                             });
                             console.log("Error while deleting category thumbnail file : " + err);
                         } else {
+                            req.body.categoryThumbnailName = req.body.categoryThumbnailName ? req.body.categoryThumbnailName : null
+                            req.body.categoryThumbnail = req.body.categoryThumbnail ? req.body.categoryThumbnail : null
                             Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
                                 .then(data => {
                                     if (!data) {
@@ -171,26 +173,33 @@ exports.update = (req, res) => {
                                             statusCode: -999
                                         });
                                     } else {
-                                        // setelah di delete filenya, baru save ulang
-                                        const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
+                                        if (req.body.categoryThumbnail != null && req.body.categoryThumbnailName != null) {
+                                            // setelah di delete filenya, baru save ulang
+                                            const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
 
-                                        // res.set('Location', userFiles + file.name);
-                                        fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
-                                            if (err) {
-                                                res.status(500).send({
-                                                    statusMessage:
-                                                        "Error while saving new category thumbnail file : " + err.message,
-                                                    statusCode: -999
-                                                });
-                                                console.log("Error while saving new category thumbnail file : " + err);
-                                            } else {
-                                                res.send({
-                                                    statusMessage: `Thumbnail with id=${id} was updated successfully`,
-                                                    statusCode: 0
-                                                });
+                                            // res.set('Location', userFiles + file.name);
+                                            fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                                                if (err) {
+                                                    res.status(500).send({
+                                                        statusMessage:
+                                                            "Error while saving new category thumbnail file : " + err.message,
+                                                        statusCode: -999
+                                                    });
+                                                    console.log("Error while saving new category thumbnail file : " + err);
+                                                } else {
+                                                    res.send({
+                                                        statusMessage: `Thumbnail with id=${id} was updated successfully`,
+                                                        statusCode: 0
+                                                    });
 
-                                            }
-                                        });
+                                                }
+                                            });
+                                        } else {
+                                            res.send({
+                                                statusMessage: `Thumbnail with id=${id} was updated successfully`,
+                                                statusCode: 0
+                                            });
+                                        }
 
                                     }
                                 })
@@ -203,6 +212,8 @@ exports.update = (req, res) => {
                         }
                     });
                 } else {
+                    req.body.categoryThumbnailName = req.body.categoryThumbnailName ? req.body.categoryThumbnailName : null
+                    req.body.categoryThumbnail = req.body.categoryThumbnail ? req.body.categoryThumbnail : null
                     Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
                         .then(data => {
                             if (!data) {
@@ -212,7 +223,7 @@ exports.update = (req, res) => {
                                 });
                             } else {
 
-                                if (req.body.categoryThumbnail && req.body.categoryThumbnailName) {
+                                if (req.body.categoryThumbnail != null && req.body.categoryThumbnailName != null) {
                                     // setelah di delete filenya, baru save ulang
                                     const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
 
