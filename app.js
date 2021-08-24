@@ -43,6 +43,7 @@ require("./src/route/student.route")(app);
 require("./src/route/teacher.route")(app);
 require("./src/route/category.route")(app);
 require("./src/route/video.route")(app);
+require("./src/route/course.route")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

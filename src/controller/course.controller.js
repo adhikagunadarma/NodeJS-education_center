@@ -1,6 +1,7 @@
 const db = require("../model");
-const trailersPathFolder = './assets/course/trailers/';
-const thumbnailsPathFolder = './assets/course/thumbnails/';
+const courseTrailersFilePathFolder = './assets/course/trailers/';
+const courseTrailersThumbnailsPathFolder = './assets/course/trailersThumbnails/';
+const courseThumbnailsPathFolder = './assets/course/thumbnails/';
 
 // const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
@@ -25,62 +26,91 @@ exports.create = (req, res) => {
     const course = new Course({
         courseName: req.body.courseName,
         courseDescription: req.body.courseDescription ?? null,
-        // courseFile: req.body.courseFile, // teralu gede untuk disimpen di db
         courseThumbnail: req.body.courseThumbnail ?? null,
-        courseThumbnailName: req.body.courseThumbnailName ?? 'default-course-thumbnail.png',
-        courseTrailercourseFile: req.body.courseTrailercourseFile ?? null,
-        courseTrailercourseName: req.body.courseTrailercourseName ?? null,
+        courseThumbnailName: req.body.courseThumbnailName ?? null,
+        courseTrailerCourseFile: req.body.courseTrailerCourseFile ?? null,
+        courseTrailerCourseName: req.body.courseTrailerCourseName ?? null,
+        courseTrailerCourseThumbnailFile: req.body.courseTrailerCourseThumbnailFile ?? null,
+        courseTrailerCourseThumbnailName: req.body.courseTrailerCourseThumbnailName ?? null,
         courseTotalBought: 0,
         courseMembership: req.body.courseMembership,
         coursePublished: req.body.coursePublished ?? false,
         courseTeacher: req.body.courseTeacher, //id tp pas get, fetch data nama teacher
     });
 
-    const trailercourseBase64data = req.body.courseTrailercourseFile.replace(/^data:.*,/, '');
-    const trailerThumbnailBase64data = req.body.courseThumbnail.replace(/^data:.*,/, '');
-    fs.writeFile(trailersPathFolder + req.body.courseTrailercourseName, trailercourseBase64data, 'base64', (err) => {
 
-        if (err) {
-            res.status(500).send({
+
+    if (req.body.courseTrailerCourseFile && req.body.courseTrailerCourseName) {
+
+        const courseTrailerBase64data = req.body.courseTrailerCourseFile.replace(/^data:.*,/, '');
+        fs.writeFile(courseTrailersFilePathFolder + req.body.courseTrailerCourseName, courseTrailerBase64data, 'base64', (err) => {
+
+            if (err) {
+                res.status(500).send({
+                    statusMessage:
+                        "Error while saving course trailer file : " + err.message,
+
+                    statusCode: -999
+                });
+                console.log(err);
+                return
+            }
+        });
+    }
+    if (req.body.courseTrailerCourseThumbnailFile && req.body.courseTrailerCourseThumbnailName) {
+
+        const courseTrailerThumbnailBase64data = req.body.courseTrailerCourseThumbnailFile.replace(/^data:.*,/, '');
+        fs.writeFile(courseTrailersThumbnailsPathFolder + req.body.courseTrailerCourseThumbnailName, courseTrailerThumbnailBase64data, 'base64', (err) => {
+
+            if (err) {
+                res.status(500).send({
+                    statusMessage:
+                        "Error while saving course trailer thumbnail file : " + err.message,
+
+                    statusCode: -999
+                });
+                console.log(err);
+                return
+            }
+        });
+    }
+
+    if (req.body.courseThumbnail && req.body.courseThumbnailName) {
+
+        const courseThumbnailBase64data = req.body.courseThumbnail.replace(/^data:.*,/, '');
+        fs.writeFile(courseThumbnailsPathFolder + req.body.courseThumbnailName, courseThumbnailBase64data, 'base64', (err) => {
+
+            if (err) {
+                res.status(500).send({
+                    statusMessage:
+                        "Error while saving course thumbnail file : " + err.message,
+
+                    statusCode: -999
+                });
+                console.log(err);
+                return
+            }
+        });
+    }
+
+    // Save Course in the database
+    course
+        .save(course)
+        .then(data => {
+            // res.send(data);
+            res.status(200).send({
                 statusMessage:
-                    "Error while saving trailer course file : " + err.message,
-
-                statusCode: -999
+                    "Course " + req.body.courseName + " had sucessfully created",
+                statusCode: 0
             });
-            console.log(err);
-        } else {
-            // res.set('Location', userFiles + file.name);
-            fs.writeFile(thumbnailsPathFolder + req.body.courseThumbnailName, trailerThumbnailBase64data, 'base64', (err) => {
-                if (err) {
-                    res.status(500).send({
-                        statusMessage:
-                            "Error while saving thumbnail file : " + err.message,
-                        statusCode: -999
-                    });
-                    console.log(err);
-                } else {
-
-                    // Save Course in the database
-                    course
-                        .save(course)
-                        .then(data => {
-                            // res.send(data);
-                            res.status(200).send({
-                                statusMessage:
-                                    "Course " + req.body.courseName + " had sucessfully created",
-                                statusCode: 0
-                            });
-                        })
-                        .catch(err => {
-                            res.status(500).send({
-                                statusMessage: err.message || "Some error occurred while creating the Course.",
-                                statusCode: -999,
-                            });
-                        });
-                }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while creating the Course.",
+                statusCode: -999,
             });
-        }
-    });
+        });
+
 
 };
 
@@ -107,7 +137,7 @@ exports.findAll = (req, res) => {
 
 // Retrieve all course from the database.
 exports.findAllByTeacher = (req, res) => {
-    const id = req.params.teacher_id;
+    const id = req.params.id;
     var condition = { courseTeacher: id };
 
     Course.find(condition)
