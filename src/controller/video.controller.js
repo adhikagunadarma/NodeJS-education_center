@@ -89,7 +89,6 @@ exports.findAll = (req, res) => {
 
     Video.find(condition)
         .then(data => {
-            data.videoFile = ""
             res.send({
                 statusMessage: "Berhasil GET all Videos",
                 statusCode: 0,
@@ -108,7 +107,7 @@ exports.findAll = (req, res) => {
 exports.findAllByCourse = (req, res) => {
     const id = req.params.id;
 
-   
+
 };
 
 // Find a single Video with an id
@@ -161,9 +160,9 @@ exports.streamVideo = (req, res) => {
                     const start = parseInt(parts[0], 10);
                     const end = parts[1]
                         ? parseInt(parts[1], 10)
-                        : fileSize-1;
-                    const chunksize = (end-start) + 1;
-                    const file = fs.createReadStream(videoPath, {start, end});
+                        : fileSize - 1;
+                    const chunksize = (end - start) + 1;
+                    const file = fs.createReadStream(videoPath, { start, end });
                     const head = {
                         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
                         'Accept-Ranges': 'bytes',
@@ -452,7 +451,7 @@ exports.deleteAll = (req, res) => {
 exports.deleteAllByCourse = (req, res) => {
     const id = req.params.id;
 
-   
+
 };
 
 // // Find all membership Video
