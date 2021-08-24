@@ -143,7 +143,7 @@ exports.findAllByTeacher = (req, res) => {
     Course.find(condition)
         .then(data => {
             res.send({
-                statusMessage: "Berhasil GET all courses",
+                statusMessage: "Berhasil GET all courses by teacher id : " + id,
                 statusCode: 0,
                 data: data
             });
