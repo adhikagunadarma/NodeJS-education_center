@@ -6,8 +6,9 @@ const courseThumbnailsPathFolder = './assets/course/thumbnails/';
 // const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
 const path = require('path');
+const { teacher } = require("../model");
 
-const course = db.course;
+const Teacher = db.teacher;
 const Course = db.course;
 
 // Create and Save a new course
@@ -119,12 +120,18 @@ exports.findAll = (req, res) => {
     const courseName = req.query.courseName;
     var condition = courseName ? { courseName: { $regex: new RegExp(courseName), $options: "i" } } : {};
 
-    course.find(condition)
-        .then(data => {
+    Course.find(condition)
+        .then(async (data) => {
+            let updatedData = []
+            for (const element of data) {
+                const newData = element
+                newData.courseTeacher = await findTeacherName(element.courseTeacher)
+                updatedData.push(newData)
+            }
             res.send({
                 statusMessage: "Berhasil GET all courses",
                 statusCode: 0,
-                data: data
+                data: updatedData
             });
         })
         .catch(err => {
@@ -135,17 +142,39 @@ exports.findAll = (req, res) => {
         });
 };
 
+findTeacherName = (id) => {
+    return new Promise((resolve, reject) => {
+        Teacher.findById(id)
+            .then(dataTeacher => {
+                if (!dataTeacher)
+                    reject(-999)
+                else {
+                    resolve(dataTeacher.teacherName)
+                }
+            })
+            .catch(err => {
+                reject(-999)
+            });
+    })
+}
+
 // Retrieve all course from the database.
 exports.findAllByTeacher = (req, res) => {
     const id = req.params.id;
     var condition = { courseTeacher: id };
 
     Course.find(condition)
-        .then(data => {
+        .then(async (data) => {
+            let updatedData = []
+            for (const element of data) {
+                const newData = element
+                newData.courseTeacher = await findTeacherName(element.courseTeacher)
+                updatedData.push(newData)
+            }
             res.send({
-                statusMessage: "Berhasil GET all courses by teacher id : " + id,
+                statusMessage: "Berhasil GET all courses",
                 statusCode: 0,
-                data: data
+                data: updatedData
             });
         })
         .catch(err => {
@@ -164,15 +193,16 @@ exports.findOne = (req, res) => {
     const id = req.params.id;
 
     Course.findById(id)
-        .then(data => {
+        .then(async (data) => {
             if (!data)
                 res.status(404).send({
                     statusMessage: "Not found course with id " + id,
                     statusCode: -999,
                 });
             else {
+                data.courseTeacher = await findTeacherName(data.courseTeacher)
                 res.send({
-                    statusMessage: "Berhasil get course with id " + id,
+                    statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,
                     data: data
                 });
