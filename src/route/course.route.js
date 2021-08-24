@@ -24,11 +24,11 @@ module.exports = app => {
     // // Delete a course with id
     // router.delete("/course/:id", courses.delete);
 
-    // // Delete all courses
-    // router.delete("/course", courses.deleteAll);
+    // Delete all courses
+    router.delete("/course", courses.deleteAll);
 
-    // // Delete all courses by course Id
-    // router.delete("/course/course/:id", courses.deleteAllByCourse);
+    // // Delete all courses by teacher Id
+    // router.delete("/course/teacher/:id", courses.deleteAllByTeacher);
 
     app.use('/api/educen', router);
 };

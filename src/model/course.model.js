@@ -6,8 +6,10 @@ module.exports = mongoose => {
             courseDescription: String,
             courseThumbnail: String,
             courseThumbnailName: String,
-            courseTrailerVideoFile: String,
-            courseTrailerVideoName: String,
+            courseTrailerCourseFile: String,
+            courseTrailerCourseName: String,
+            courseTrailerCourseThumbnailFile: String,
+            courseTrailerCourseThumbnailName: String,
             courseTotalBought: Number,
             courseMembership: Boolean,
             coursePublished: Boolean,
@@ -20,7 +22,7 @@ module.exports = mongoose => {
         const { __v, _id, ...object } = this.toObject();
         object.id = _id;
 
-        delete object.courseTrailerVideoFile
+        delete object.courseTrailerCourseFile
         return object;
     });
 

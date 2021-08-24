@@ -187,3 +187,110 @@ exports.findOne = (req, res) => {
                 });
         });
 };
+
+
+// Delete all Video from the database.
+exports.deleteAll = (req, res) => {
+
+
+    fs.readdir(courseTrailersFilePathFolder, (err, files) => {
+        // if (err) throw err;
+        if (err) {
+            res.status(500).send({
+                statusMessage: "Could not read course trailer folder",
+                statusCode: -999
+            });
+            return
+        } else {
+            if (files.length > 0) {
+                for (const file of files) {
+                    fs.unlink(path.join(courseTrailersFilePathFolder, file), err => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Could not delete course trailer file",
+                                statusCode: -999
+                            });
+                            return
+                        }
+                    });
+                }
+            }
+
+        }
+
+
+    });
+
+    fs.readdir(courseTrailersThumbnailsPathFolder, (err, files) => {
+        // if (err) throw err;
+        if (err) {
+            res.status(500).send({
+                statusMessage: "Could not read course trailer thumbnail folder",
+                statusCode: -999
+            });
+            return
+        } else {
+            if (files.length > 0) {
+                for (const file of files) {
+                    fs.unlink(path.join(courseTrailersThumbnailsPathFolder, file), err => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Could not delete course trailer thumbnail file",
+                                statusCode: -999
+                            });
+                            return
+                        }
+                    });
+                }
+            }
+
+        }
+
+
+    });
+
+    fs.readdir(courseThumbnailsPathFolder, (err, files) => {
+        // if (err) throw err;
+        if (err) {
+            res.status(500).send({
+                statusMessage: "Could not read course thumbnail folder",
+                statusCode: -999
+            });
+            return
+        } else {
+            if (files.length > 0) {
+                for (const file of files) {
+                    fs.unlink(path.join(courseThumbnailsPathFolder, file), err => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Could not delete course thumbnail file",
+                                statusCode: -999
+                            });
+                            return
+                        }
+                    });
+                }
+            }
+
+        }
+
+
+    });
+
+    Course.deleteMany({})
+        .then(data => {
+            res.send({
+                statusMessage: `${data.deletedCount} courses were deleted successfully!`,
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage:
+                    err.message || "Some error occurred while removing all courses.",
+                statusCode: -999
+            });
+        });
+
+
+};
