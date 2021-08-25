@@ -218,6 +218,63 @@ exports.findOne = (req, res) => {
         });
 };
 
+// Stream a single Video with an id
+exports.streamCourseTrailer = (req, res) => {
+    const id = req.params.id;
+
+    Course.findById(id)
+        .then(data => {
+            if (!data)
+                res.status(404).send({
+                    statusMessage: "Cannot Stream trailer coursewith id " + id,
+                    statusCode: -999,
+                });
+            else {
+                const videoPath = courseTrailersFilePathFolder + data.courseTrailerName;
+                const videoStat = fs.statSync(videoPath);
+                const fileSize = videoStat.size;
+                const videoRange = req.headers.range;
+                if (videoRange) {
+                    const parts = videoRange.replace(/bytes=/, "").split("-");
+                    const start = parseInt(parts[0], 10);
+                    const end = parts[1]
+                        ? parseInt(parts[1], 10)
+                        : fileSize - 1;
+                    const chunksize = (end - start) + 1;
+                    const file = fs.createReadStream(videoPath, { start, end });
+                    const head = {
+                        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                        'Accept-Ranges': 'bytes',
+                        'Content-Length': chunksize,
+                        'Content-Type': 'video/mp4',
+                    };
+                    res.writeHead(206, head);
+                    file.pipe(res);
+                } else {
+                    const head = {
+                        'Content-Length': fileSize,
+                        'Content-Type': 'video/mp4',
+                    };
+                    res.writeHead(200, head);
+                    fs.createReadStream(videoPath).pipe(res);
+                }
+                // res.send({
+                //     statusMessage: "Berhasil get Video with id " + id,
+                //     statusCode: 0,
+                //     data: data
+                // });
+            }
+        })
+        .catch(err => {
+            res
+                .status(500)
+                .send({
+                    statusMessage: "Cannot Stream trailer course with id " + id,
+                    statusCode: -999,
+                });
+        });
+};
+
 // Update a course by the id in the request
 exports.update = (req, res) => {
     if (!req.body) {

@@ -276,24 +276,7 @@ exports.update = (req, res) => {
                                                                 statusMessage: `Video with id=${id} was updated successfully`,
                                                                 statusCode: 0
                                                             });
-                                                            // Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                                                            //     .then(data => {
-                                                            //         if (!data) {
-                                                            //             res.status(404).send({
-                                                            //                 statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
-                                                            //                 statusCode: -999
-                                                            //             });
-                                                            //         } else res.send({
-                                                            //             statusMessage: `Video with id=${id} was updated successfully`,
-                                                            //             statusCode: 0
-                                                            //         });
-                                                            //     })
-                                                            //     .catch(err => {
-                                                            //         res.status(500).send({
-                                                            //             statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
-                                                            //             statusCode: -999
-                                                            //         });
-                                                            //     });
+
                                                         }
                                                     });
                                                     // Save Video in the database

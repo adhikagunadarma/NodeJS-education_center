@@ -15,8 +15,8 @@ module.exports = app => {
     // Retrieve a single course with id
     router.get("/course/:id", courses.findOne);
 
-    //     // Stream Single course
-    // router.get("/course/stream/:id", courses.streamCourseTrailer);
+    // Stream Single course
+    router.get("/course/stream/:id", courses.streamCourseTrailer);
 
     // Update a course with id
     router.put("/course/:id", courses.update);
