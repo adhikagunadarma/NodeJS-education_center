@@ -18,8 +18,8 @@ module.exports = app => {
     //     // Stream Single course
     // router.get("/course/stream/:id", courses.streamCourseTrailer);
 
-    // // Update a course with id
-    // router.put("/course/:id", courses.update);
+    // Update a course with id
+    router.put("/course/:id", courses.update);
 
     // Delete a course with id
     router.delete("/course/:id", courses.delete);

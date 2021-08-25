@@ -218,18 +218,174 @@ exports.findOne = (req, res) => {
         });
 };
 
+// Update a course by the id in the request
+exports.update = (req, res) => {
+    if (!req.body) {
+        return res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
+
+
+
+    const id = req.params.id;
+
+    //delete course existing first
+    Course.findById(id)
+        .then(async (data) => {
+            // console.log(data)
+            if (!data)
+                res.status(404).send({
+                    statusMessage:
+                        "Not found course with id " + id,
+                    statusCode: -999
+                });
+            else {
+                // will remove the existing file, if there is the previous one, and the upcoming one is there
+                if ((data.courseThumbnailName != null) && (req.body.courseThumbnail && req.body.courseThumbnailName)) {
+                    fs.unlink(courseThumbnailsPathFolder + data.courseThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course thumbnail with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (data.courseTrailerName != null && (req.body.courseTrailerFile && req.body.courseTrailerName)) {
+
+                    fs.unlink(courseTrailersFilePathFolder + data.courseTrailerName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (data.courseTrailerThumbnailName != null && (req.body.courseTrailerThumbnailFile && req.body.courseTrailerThumbnailName)) {
+                    fs.unlink(courseTrailersThumbnailsPathFolder + data.courseTrailerThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course thumbnail with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (req.body.courseTrailerFile && req.body.courseTrailerName) {
+
+                    const courseTrailerBase64data = req.body.courseTrailerFile.replace(/^data:.*,/, '');
+                    fs.writeFile(courseTrailersFilePathFolder + req.body.courseTrailerName, courseTrailerBase64data, 'base64', (err) => {
+
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while saving course trailer file : " + err.message,
+
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+                if (req.body.courseTrailerThumbnailFile && req.body.courseTrailerThumbnailName) {
+
+                    const courseTrailerThumbnailBase64data = req.body.courseTrailerThumbnailFile.replace(/^data:.*,/, '');
+                    fs.writeFile(courseTrailersThumbnailsPathFolder + req.body.courseTrailerThumbnailName, courseTrailerThumbnailBase64data, 'base64', (err) => {
+
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while saving course trailer thumbnail file : " + err.message,
+
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (req.body.courseThumbnail && req.body.courseThumbnailName) {
+
+                    const courseThumbnailBase64data = req.body.courseThumbnail.replace(/^data:.*,/, '');
+                    fs.writeFile(courseThumbnailsPathFolder + req.body.courseThumbnailName, courseThumbnailBase64data, 'base64', (err) => {
+
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while saving course thumbnail file : " + err.message,
+
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                Course.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot update course with id=${id}. Maybe course was not found!`,
+                                statusCode: -999
+                            });
+                        } else {
+                            res.send({
+                                statusMessage: `course with id=${id} was updated successfully`,
+                                statusCode: 0
+                            });
+
+
+
+                        }
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            statusMessage: "Error updating course with id=" + id + ". Error : " + err.message,
+                            statusCode: -999
+                        });
+                    });
+
+
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: "Error updating course. Error : " + err.message,
+                statusCode: -999
+            });
+        });
+
+
+};
+
 // Delete a course with the specified id in the request
 exports.delete = (req, res) => {
     const id = req.params.id;
 
-    Course.findByIdAndRemove(id)
+    Course.find(id)
         .then(async (data) => {
             console.log(data.courseTrailerName)
             console.log(data.courseTrailerThumbnailName)
             console.log(data.courseThumbnailName)
             if (!data) {
                 res.status(404).send({
-                    statusMessage: `Cannot delete Video with id=${id}. Maybe Video was not found!`,
+                    statusMessage: `Cannot delete course with id=${id}. Maybe course was not found!`,
                     statusCode: -999
                 });
 
@@ -277,7 +433,7 @@ exports.delete = (req, res) => {
 
 
                 res.send({
-                    statusMessage: "Video with id=" + id + ",was deleted successfully!",
+                    statusMessage: "course with id=" + id + ",was deleted successfully!",
                     statusCode: 0
                 });
 
@@ -287,14 +443,14 @@ exports.delete = (req, res) => {
         .catch(err => {
             console.log(err)
             res.status(500).send({
-                statusMessage: "Could not delete Video with id=" + id,
+                statusMessage: "Could not delete course with id=" + id,
                 statusCode: -999
             });
         });
 };
 
 
-// Delete all Video from the database.
+// Delete all course from the database.
 exports.deleteAll = (req, res) => {
 
 
