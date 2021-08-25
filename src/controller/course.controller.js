@@ -29,10 +29,10 @@ exports.create = (req, res) => {
         courseDescription: req.body.courseDescription ?? null,
         courseThumbnail: req.body.courseThumbnail ?? null,
         courseThumbnailName: req.body.courseThumbnailName ?? null,
-        courseTrailerCourseFile: req.body.courseTrailerCourseFile ?? null,
-        courseTrailerCourseName: req.body.courseTrailerCourseName ?? null,
-        courseTrailerCourseThumbnailFile: req.body.courseTrailerCourseThumbnailFile ?? null,
-        courseTrailerCourseThumbnailName: req.body.courseTrailerCourseThumbnailName ?? null,
+        courseTrailerFile: req.body.courseTrailerFile ?? null,
+        courseTrailerName: req.body.courseTrailerName ?? null,
+        courseTrailerThumbnailFile: req.body.courseTrailerThumbnailFile ?? null,
+        courseTrailerThumbnailName: req.body.courseTrailerThumbnailName ?? null,
         courseTotalBought: 0,
         courseMembership: req.body.courseMembership,
         coursePublished: req.body.coursePublished ?? false,
@@ -41,10 +41,10 @@ exports.create = (req, res) => {
 
 
 
-    if (req.body.courseTrailerCourseFile && req.body.courseTrailerCourseName) {
+    if (req.body.courseTrailerFile && req.body.courseTrailerName) {
 
-        const courseTrailerBase64data = req.body.courseTrailerCourseFile.replace(/^data:.*,/, '');
-        fs.writeFile(courseTrailersFilePathFolder + req.body.courseTrailerCourseName, courseTrailerBase64data, 'base64', (err) => {
+        const courseTrailerBase64data = req.body.courseTrailerFile.replace(/^data:.*,/, '');
+        fs.writeFile(courseTrailersFilePathFolder + req.body.courseTrailerName, courseTrailerBase64data, 'base64', (err) => {
 
             if (err) {
                 res.status(500).send({
@@ -58,10 +58,10 @@ exports.create = (req, res) => {
             }
         });
     }
-    if (req.body.courseTrailerCourseThumbnailFile && req.body.courseTrailerCourseThumbnailName) {
+    if (req.body.courseTrailerThumbnailFile && req.body.courseTrailerThumbnailName) {
 
-        const courseTrailerThumbnailBase64data = req.body.courseTrailerCourseThumbnailFile.replace(/^data:.*,/, '');
-        fs.writeFile(courseTrailersThumbnailsPathFolder + req.body.courseTrailerCourseThumbnailName, courseTrailerThumbnailBase64data, 'base64', (err) => {
+        const courseTrailerThumbnailBase64data = req.body.courseTrailerThumbnailFile.replace(/^data:.*,/, '');
+        fs.writeFile(courseTrailersThumbnailsPathFolder + req.body.courseTrailerThumbnailName, courseTrailerThumbnailBase64data, 'base64', (err) => {
 
             if (err) {
                 res.status(500).send({
@@ -218,97 +218,175 @@ exports.findOne = (req, res) => {
         });
 };
 
+// Delete a course with the specified id in the request
+exports.delete = (req, res) => {
+    const id = req.params.id;
+
+    Course.findByIdAndRemove(id)
+        .then(async (data) => {
+            console.log(data.courseTrailerName)
+            console.log(data.courseTrailerThumbnailName)
+            console.log(data.courseThumbnailName)
+            if (!data) {
+                res.status(404).send({
+                    statusMessage: `Cannot delete Video with id=${id}. Maybe Video was not found!`,
+                    statusCode: -999
+                });
+
+            } else {
+                if (data.courseThumbnailName != null) {
+                    fs.unlink(courseThumbnailsPathFolder + data.courseThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course thumbnail with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (data.courseTrailerName != null) {
+
+                    fs.unlink(courseTrailersFilePathFolder + data.courseTrailerName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+                if (data.courseTrailerThumbnailName != null) {
+                    fs.unlink(courseTrailersThumbnailsPathFolder + data.courseTrailerThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage: "Cannot Delete course thumbnail with id=" + id,
+                                statusCode: -999
+                            });
+                            console.log(err);
+                            return
+                        }
+                    });
+                }
+
+
+
+                res.send({
+                    statusMessage: "Video with id=" + id + ",was deleted successfully!",
+                    statusCode: 0
+                });
+
+
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            res.status(500).send({
+                statusMessage: "Could not delete Video with id=" + id,
+                statusCode: -999
+            });
+        });
+};
+
 
 // Delete all Video from the database.
 exports.deleteAll = (req, res) => {
 
 
-    fs.readdir(courseTrailersFilePathFolder, (err, files) => {
-        // if (err) throw err;
-        if (err) {
-            res.status(500).send({
-                statusMessage: "Could not read course trailer folder",
-                statusCode: -999
-            });
-            return
-        } else {
-            if (files.length > 0) {
-                for (const file of files) {
-                    fs.unlink(path.join(courseTrailersFilePathFolder, file), err => {
-                        if (err) {
-                            res.status(500).send({
-                                statusMessage: "Could not delete course trailer file",
-                                statusCode: -999
-                            });
-                            return
-                        }
-                    });
-                }
-            }
 
-        }
-
-
-    });
-
-    fs.readdir(courseTrailersThumbnailsPathFolder, (err, files) => {
-        // if (err) throw err;
-        if (err) {
-            res.status(500).send({
-                statusMessage: "Could not read course trailer thumbnail folder",
-                statusCode: -999
-            });
-            return
-        } else {
-            if (files.length > 0) {
-                for (const file of files) {
-                    fs.unlink(path.join(courseTrailersThumbnailsPathFolder, file), err => {
-                        if (err) {
-                            res.status(500).send({
-                                statusMessage: "Could not delete course trailer thumbnail file",
-                                statusCode: -999
-                            });
-                            return
-                        }
-                    });
-                }
-            }
-
-        }
-
-
-    });
-
-    fs.readdir(courseThumbnailsPathFolder, (err, files) => {
-        // if (err) throw err;
-        if (err) {
-            res.status(500).send({
-                statusMessage: "Could not read course thumbnail folder",
-                statusCode: -999
-            });
-            return
-        } else {
-            if (files.length > 0) {
-                for (const file of files) {
-                    fs.unlink(path.join(courseThumbnailsPathFolder, file), err => {
-                        if (err) {
-                            res.status(500).send({
-                                statusMessage: "Could not delete course thumbnail file",
-                                statusCode: -999
-                            });
-                            return
-                        }
-                    });
-                }
-            }
-
-        }
-
-
-    });
 
     Course.deleteMany({})
-        .then(data => {
+        .then(async (data) => {
+
+            fs.readdir(courseTrailersFilePathFolder, (err, files) => {
+                // if (err) throw err;
+                if (err) {
+                    res.status(500).send({
+                        statusMessage: "Could not read course trailer folder",
+                        statusCode: -999
+                    });
+                    return
+                } else {
+                    if (files.length > 0) {
+                        for (const file of files) {
+                            fs.unlink(path.join(courseTrailersFilePathFolder, file), err => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage: "Could not delete course trailer file",
+                                        statusCode: -999
+                                    });
+                                    return
+                                }
+                            });
+                        }
+                    }
+
+                }
+
+
+            });
+
+            fs.readdir(courseTrailersThumbnailsPathFolder, (err, files) => {
+                // if (err) throw err;
+                if (err) {
+                    res.status(500).send({
+                        statusMessage: "Could not read course trailer thumbnail folder",
+                        statusCode: -999
+                    });
+                    return
+                } else {
+                    if (files.length > 0) {
+                        for (const file of files) {
+                            fs.unlink(path.join(courseTrailersThumbnailsPathFolder, file), err => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage: "Could not delete course trailer thumbnail file",
+                                        statusCode: -999
+                                    });
+                                    return
+                                }
+                            });
+                        }
+                    }
+
+                }
+
+
+            });
+
+            fs.readdir(courseThumbnailsPathFolder, (err, files) => {
+                // if (err) throw err;
+                if (err) {
+                    res.status(500).send({
+                        statusMessage: "Could not read course thumbnail folder",
+                        statusCode: -999
+                    });
+                    return
+                } else {
+                    if (files.length > 0) {
+                        for (const file of files) {
+                            fs.unlink(path.join(courseThumbnailsPathFolder, file), err => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage: "Could not delete course thumbnail file",
+                                        statusCode: -999
+                                    });
+                                    return
+                                }
+                            });
+                        }
+                    }
+
+                }
+
+
+            });
+
             res.send({
                 statusMessage: `${data.deletedCount} courses were deleted successfully!`,
                 statusCode: 0

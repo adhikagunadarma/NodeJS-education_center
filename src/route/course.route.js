@@ -21,8 +21,8 @@ module.exports = app => {
     // // Update a course with id
     // router.put("/course/:id", courses.update);
 
-    // // Delete a course with id
-    // router.delete("/course/:id", courses.delete);
+    // Delete a course with id
+    router.delete("/course/:id", courses.delete);
 
     // Delete all courses
     router.delete("/course", courses.deleteAll);
