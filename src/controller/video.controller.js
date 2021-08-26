@@ -164,15 +164,16 @@ exports.findOne = (req, res) => {
     const id = req.params.id;
 
     Video.findById(id)
-        .then(data => {
+        .then(async (data) => {
             if (!data)
                 res.status(404).send({
                     statusMessage: "Not found Video with id " + id,
                     statusCode: -999,
                 });
             else {
+                data.videoCourse = await findCourseName(data.videoCourse)
                 res.send({
-                    statusMessage: "Berhasil get Video with id " + id,
+                    statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,
                     data: data
                 });
@@ -271,80 +272,86 @@ exports.update = (req, res) => {
                 });
             else {
 
-                fs.unlink(videosPathFolder + data.videoFileName, (err) => {
-                    if (err) {
+                //if there are new thumbnail or video along the new params, then need to delete the old one, otherwise dont bother
+                if (req.body.videoFile && req.body.videoFileName) {
+                    fs.unlink(videosPathFolder + data.videoFileName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while deleting video file : " + err.message,
+                                statusCode: -999
+                            });
+                            console.log("Error while deleting video file : " + err);
+                            return
+                        } else {
+                            const videoBase64data = req.body.videoFile.replace(/^data:.*,/, '');
+                            fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage:
+                                            "Error while saving new video file : " + err.message,
+                                        statusCode: -999
+                                    });
+                                    console.log("Error while saving new video file : " + err);
+                                    return
+                                }
+                            });
+                        }
+                    });
+
+                }
+                if (req.body.videoThumbnail && req.body.videoThumbnailName) {
+                    fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
+                        if (err) {
+                            res.status(500).send({
+                                statusMessage:
+                                    "Error while deleting video thumbnail file : " + err.message,
+                                statusCode: -999
+                            });
+                            console.log("Error while deleting video thumbnail file : " + err);
+                            return
+                        } else {
+
+                            const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
+
+                            fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage:
+                                            "Error while saving new thumbnail file : " + err.message,
+                                        statusCode: -999
+                                    });
+                                    console.log("Error while saving new thumbnail file : " + err);
+                                    return
+                                }
+                            });
+                        }
+                    });
+                }
+
+
+                Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
+                                statusCode: -999
+                            });
+                        } else {
+                            res.send({
+                                statusMessage: `video with id=${id} was updated successfully`,
+                                statusCode: 0
+                            });
+                        }
+                    })
+                    .catch(err => {
                         res.status(500).send({
-                            statusMessage:
-                                "Error while deleting video file : " + err.message,
+                            statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
                             statusCode: -999
                         });
-                        console.log("Error while deleting video file : " + err);
-                    } else {
-                        // kalo sukses
-                        // res.send(data);
-                        fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
-                            if (err) {
-                                res.status(500).send({
-                                    statusMessage:
-                                        "Error while deleting video thumbnail file : " + err.message,
-                                    statusCode: -999
-                                });
-                                console.log("Error while deleting video thumbnail file : " + err);
-                            } else {
-                                Video.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                                    .then(data => {
-                                        if (!data) {
-                                            res.status(404).send({
-                                                statusMessage: `Cannot update Video with id=${id}. Maybe Video was not found!`,
-                                                statusCode: -999
-                                            });
-                                        } else {
-                                            // setelah di delete filenya, baru save ulang
-                                            const videoBase64data = req.body.videoFile.replace(/^data:.*,/, '');
-                                            const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
-                                            fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
-                                                if (err) {
-                                                    res.status(500).send({
-                                                        statusMessage:
-                                                            "Error while saving new video file : " + err.message,
-                                                        statusCode: -999
-                                                    });
-                                                    console.log("Error while saving new video file : " + err);
-                                                } else {
-                                                    // res.set('Location', userFiles + file.name);
-                                                    fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
-                                                        if (err) {
-                                                            res.status(500).send({
-                                                                statusMessage:
-                                                                    "Error while saving new thumbnail file : " + err.message,
-                                                                statusCode: -999
-                                                            });
-                                                            console.log("Error while saving new thumbnail file : " + err);
-                                                        } else {
-                                                            res.send({
-                                                                statusMessage: `Video with id=${id} was updated successfully`,
-                                                                statusCode: 0
-                                                            });
+                    });
 
-                                                        }
-                                                    });
-                                                    // Save Video in the database
 
-                                                }
-                                            });
-                                        }
-                                    })
-                                    .catch(err => {
-                                        res.status(500).send({
-                                            statusMessage: "Error updating Video with id=" + id + ". Error : " + err.message,
-                                            statusCode: -999
-                                        });
-                                    });
-                            }
-                        });
-
-                    }
-                });
             }
         })
         .catch(err => {
