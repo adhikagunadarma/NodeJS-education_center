@@ -8,7 +8,7 @@ module.exports = mongoose => {
             videoFileName: String,
             videoThumbnail: String,
             videoThumbnailName: String,
-            videoCourseName: String,
+            videoCourse: String,
             videoTotalViews: Number
         },
         { timestamps: true }
@@ -17,6 +17,8 @@ module.exports = mongoose => {
     schema.method("toJSON", function () {
         const { __v, _id, ...object } = this.toObject();
         object.id = _id;
+
+        delete object.videoFile
         return object;
     });
 

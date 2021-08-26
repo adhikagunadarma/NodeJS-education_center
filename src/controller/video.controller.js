@@ -23,20 +23,19 @@ exports.create = (req, res) => {
 
     // Create a Video
     const video = new Video({
-        title: req.body.title,
-        description: req.body.description,
-        // videoFile: req.body.videoFile, // teralu gede untuk disimpen di db
+        videoTitle: req.body.videoTitle,
+        videoDescription: req.body.videoDescription,
+        videoFile: req.body.videoFile, // teralu gede untuk disimpen di db
         videoThumbnail: req.body.videoThumbnail,
         videoFileName: req.body.videoFileName,
         videoThumbnailName: req.body.videoThumbnailName,
-        category: req.body.category,
-        published: false,
-        membership: req.body.membership,
-        totalViews: 0
+        videoCourse: req.body.videoCourse,
+        videoTotalViews: 0
     });
 
+
+    // thumbnail and video are required so, no if
     const videoBase64data = req.body.videoFile.replace(/^data:.*,/, '');
-    const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
     fs.writeFile(videosPathFolder + req.body.videoFileName, videoBase64data, 'base64', (err) => {
 
         if (err) {
@@ -47,39 +46,44 @@ exports.create = (req, res) => {
                 statusCode: -999
             });
             console.log(err);
-        } else {
-            // res.set('Location', userFiles + file.name);
-            fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
-                if (err) {
-                    res.status(500).send({
-                        statusMessage:
-                            "Error while saving thumbnail file : " + err.message,
-                        statusCode: -999
-                    });
-                    console.log(err);
-                } else {
-
-                    // Save Video in the database
-                    video
-                        .save(video)
-                        .then(data => {
-                            // res.send(data);
-                            res.status(200).send({
-                                statusMessage:
-                                    "Sukses Membuat video",
-                                statusCode: 0
-                            });
-                        })
-                        .catch(err => {
-                            res.status(500).send({
-                                statusMessage: err.message || "Some error occurred while creating the Video.",
-                                statusCode: -999,
-                            });
-                        });
-                }
-            });
         }
     });
+
+
+    // thumbnail and video are required so, no if
+    const thumbnailBase64data = req.body.videoThumbnail.replace(/^data:.*,/, '');
+    fs.writeFile(thumbnailsPathFolder + req.body.videoThumbnailName, thumbnailBase64data, 'base64', (err) => {
+        if (err) {
+            res.status(500).send({
+                statusMessage:
+                    "Error while saving thumbnail file : " + err.message,
+                statusCode: -999
+            });
+            console.log(err);
+        } else {
+
+
+        }
+    });
+
+
+    // Save Video in the database
+    video
+        .save(video)
+        .then(data => {
+            // res.send(data);
+            res.status(200).send({
+                statusMessage:
+                    "Sukses Membuat video",
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while creating the Video.",
+                statusCode: -999,
+            });
+        });
 
 };
 // Retrieve all Video from the database.
