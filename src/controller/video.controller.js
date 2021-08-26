@@ -133,8 +133,30 @@ exports.findAll = (req, res) => {
 // Find a all Video by course id
 exports.findAllByCourse = (req, res) => {
     const id = req.params.id;
+    var condition = id ? { videoCourse: id } : {};
+    Video.find(condition)
+        .then(async (data) => {
+            let updatedList = []
 
+            for (const element of data) {
 
+                const newData = element
+                newData.videoCourse = await findCourseName(element.videoCourse)
+
+                updatedList.push(newData)
+            }
+            res.send({
+                statusMessage: "Berhasil GET all videos by course name " + updatedList[0].videoCourse, // karena semua video berasal dr course yg sama
+                statusCode: 0,
+                data: updatedList
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while retrieving the Video.",
+                statusCode: -999,
+            });
+        });
 };
 
 // Find a single Video with an id
