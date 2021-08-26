@@ -39,45 +39,26 @@ exports.create = (req, res) => {
                     statusCode: -999
                 });
                 console.log(err);
-            } else {
-                // Save category in the database
-                category
-                    .save(category)
-                    .then(data => {
-                        res.status(200).send({
-                            statusMessage:
-                                "Category " + req.body.categoryName + " has been created",
-                            statusCode: 0
-                        });
-                    })
-                    .catch(err => {
-                        res.status(500).send({
-                            statusMessage: err.message || "Some error occurred while creating the Category.",
-                            statusCode: -999,
-                        });
-                    });
+                return
             }
         });
-    } else {
-        category
-            .save(category)
-            .then(data => {
-                res.status(200).send({
-                    statusMessage:
-                        "Category " + req.body.categoryName + " has been created",
-                    statusCode: 0
-                });
-            })
-            .catch(err => {
-                res.status(500).send({
-                    statusMessage: err.message || "Some error occurred while creating the Category.",
-                    statusCode: -999,
-                });
-            });
+
     }
-
-
-
+    category
+        .save(category)
+        .then(data => {
+            res.status(200).send({
+                statusMessage:
+                    "Category " + req.body.categoryName + " has been created",
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while creating the Category.",
+                statusCode: -999,
+            });
+        });
 };
 
 // Retrieve all Tutorials from the database.
