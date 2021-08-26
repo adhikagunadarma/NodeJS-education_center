@@ -224,20 +224,14 @@ exports.delete = (req, res) => {
                                 statusCode: -999
                             });
                             console.log(err);
-                        } else {
-                            // kalo sukses
-                            res.send({
-                                statusMessage: "Category " + data.categoryName + " was deleted successfully!",
-                                statusCode: 0
-                            });
+                            return
                         }
                     });
-                } else {
-                    res.send({
-                        statusMessage: "Category " + data.categoryName + " was deleted successfully!",
-                        statusCode: 0
-                    });
                 }
+                res.send({
+                    statusMessage: "Category " + data.categoryName + " was deleted successfully!",
+                    statusCode: 0
+                });
 
 
             }
