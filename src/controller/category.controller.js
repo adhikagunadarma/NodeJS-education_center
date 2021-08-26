@@ -153,7 +153,7 @@ exports.update = (req, res) => {
                     statusCode: -999
                 });
             else {
-                if (data.categoryThumbnailName != null && data.categoryThumbnail != null) {
+                if ((data.categoryThumbnailName != null && data.categoryThumbnail != null) && (req.body.categoryThumbnail && req.body.categoryThumbnailName)) {
                     fs.unlink(thumbnailsPathFolder + data.categoryThumbnailName, (err) => {
                         if (err) {
                             res.status(500).send({
@@ -162,105 +162,52 @@ exports.update = (req, res) => {
                                 statusCode: -999
                             });
                             console.log("Error while deleting category thumbnail file : " + err);
-                        } else {
-                            req.body.categoryThumbnailName = req.body.categoryThumbnailName ? req.body.categoryThumbnailName : null
-                            req.body.categoryThumbnail = req.body.categoryThumbnail ? req.body.categoryThumbnail : null
-                            Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                                .then(data => {
-                                    if (!data) {
-                                        res.status(404).send({
-                                            statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
-                                            statusCode: -999
-                                        });
-                                    } else {
-                                        if (req.body.categoryThumbnail != null && req.body.categoryThumbnailName != null) {
-                                            // setelah di delete filenya, baru save ulang
-                                            const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
-
-                                            // res.set('Location', userFiles + file.name);
-                                            fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
-                                                if (err) {
-                                                    res.status(500).send({
-                                                        statusMessage:
-                                                            "Error while saving new category thumbnail file : " + err.message,
-                                                        statusCode: -999
-                                                    });
-                                                    console.log("Error while saving new category thumbnail file : " + err);
-                                                } else {
-                                                    res.send({
-                                                        statusMessage: `Thumbnail with id=${id} was updated successfully`,
-                                                        statusCode: 0
-                                                    });
-
-                                                }
-                                            });
-                                        } else {
-                                            res.send({
-                                                statusMessage: `Thumbnail with id=${id} was updated successfully`,
-                                                statusCode: 0
-                                            });
-                                        }
-
-                                    }
-                                })
-                                .catch(err => {
-                                    res.status(500).send({
-                                        statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
-                                        statusCode: -999
-                                    });
-                                });
+                            return
                         }
                     });
-                } else {
-                    req.body.categoryThumbnailName = req.body.categoryThumbnailName ? req.body.categoryThumbnailName : null
-                    req.body.categoryThumbnail = req.body.categoryThumbnail ? req.body.categoryThumbnail : null
-                    Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-                        .then(data => {
-                            if (!data) {
-                                res.status(404).send({
-                                    statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
-                                    statusCode: -999
-                                });
-                            } else {
+                }
 
-                                if (req.body.categoryThumbnail != null && req.body.categoryThumbnailName != null) {
-                                    // setelah di delete filenya, baru save ulang
-                                    const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
+                if (req.body.categoryThumbnail != null && req.body.categoryThumbnailName != null) {
+                    // setelah di delete filenya, baru save ulang
+                    const thumbnailBase64data = req.body.categoryThumbnail.replace(/^data:.*,/, '');
 
-                                    // res.set('Location', userFiles + file.name);
-                                    fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
-                                        if (err) {
-                                            res.status(500).send({
-                                                statusMessage:
-                                                    "Error while saving new category thumbnail file : " + err.message,
-                                                statusCode: -999
-                                            });
-                                            console.log("Error while saving new category thumbnail file : " + err);
-                                        } else {
-                                            res.send({
-                                                statusMessage: `Thumbnail with id=${id} was updated successfully`,
-                                                statusCode: 0
-                                            });
-
-                                        }
-                                    });
-                                } else {
-                                    res.send({
-                                        statusMessage: `Thumbnail with id=${id} was updated successfully`,
-                                        statusCode: 0
-                                    });
-                                }
-
-
-                            }
-                        })
-                        .catch(err => {
+                    // res.set('Location', userFiles + file.name);
+                    fs.writeFile(thumbnailsPathFolder + req.body.categoryThumbnailName, thumbnailBase64data, 'base64', (err) => {
+                        if (err) {
                             res.status(500).send({
-                                statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
+                                statusMessage:
+                                    "Error while saving new category thumbnail file : " + err.message,
                                 statusCode: -999
                             });
-                        });
+                            console.log("Error while saving new category thumbnail file : " + err);
+                            return
+                        }
+                    });
                 }
+
+                Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot update category with id=${id}. Maybe category was not found!`,
+                                statusCode: -999
+                            });
+                        } else {
+
+                            res.send({
+                                statusMessage: `category with id=${id} was updated successfully`,
+                                statusCode: 0
+                            });
+
+
+                        }
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            statusMessage: "Error updating category with id=" + id + ". Error : " + err.message,
+                            statusCode: -999
+                        });
+                    });
 
 
 
@@ -274,26 +221,6 @@ exports.update = (req, res) => {
         });
 
 
-    // Category.findByIdAndUpdate(id, req.body, { useFindAndModify: false })
-    //     .then(data => {
-    //         if (!data) {
-    //             res.status(404).send({
-    //                 statusMessage: `Cannot update Category with id=${id}. Maybe Category was not found!`,
-    //                 statusCode: -999
-    //             });
-    //         } else {
-    //             res.send({
-    //                 statusMessage: `Category with id=${id} was updated successfully`,
-    //                 statusCode: 0
-    //             });
-    //         }
-    //     })
-    //     .catch(err => {
-    //         res.status(500).send({
-    //             statusMessage: "Error updating Category with id=" + id + ". Error : " + err.message,
-    //             statusCode: -999
-    //         });
-    //     });
 };
 
 // Delete a Tutorial with the specified id in the request

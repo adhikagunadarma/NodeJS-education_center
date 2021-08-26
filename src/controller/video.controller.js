@@ -533,13 +533,6 @@ exports.deleteAllByCourse = async (req, res) => {
                                     return
                                 }
                             });
-
-                            res.send({
-                                statusMessage: "Video with id=" + id + ",was deleted successfully!",
-                                statusCode: 0
-                            });
-
-
                         }
                     })
                     .catch(err => {
