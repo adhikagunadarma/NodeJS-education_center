@@ -368,6 +368,7 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     const id = req.params.id;
 
+
     Video.findByIdAndRemove(id)
         .then(data => {
             if (!data) {
@@ -428,6 +429,7 @@ exports.deleteAll = (req, res) => {
                 statusMessage: "Could not read Videos folder",
                 statusCode: -999
             });
+            return
         } else {
             for (const file of files) {
                 fs.unlink(path.join(videosPathFolder, file), err => {
@@ -436,44 +438,7 @@ exports.deleteAll = (req, res) => {
                             statusMessage: "Could not delete Videos file",
                             statusCode: -999
                         });
-                    } else {
-                        fs.readdir(thumbnailsPathFolder, (err, files) => {
-                            // if (err) throw err;
-                            if (err) {
-                                res.status(500).send({
-                                    statusMessage: "Could not read Thumbnails folder",
-                                    statusCode: -999
-                                });
-                            } else {
-                                for (const file of files) {
-                                    fs.unlink(path.join(thumbnailsPathFolder, file), err => {
-                                        if (err) {
-                                            res.status(500).send({
-                                                statusMessage: "Could not delete Thumbnails file",
-                                                statusCode: -999
-                                            });
-                                        } else {
-                                            Video.deleteMany({})
-                                                .then(data => {
-                                                    res.send({
-                                                        statusMessage: `${data.deletedCount} Videos were deleted successfully!`,
-                                                        statusCode: 0
-                                                    });
-                                                })
-                                                .catch(err => {
-                                                    res.status(500).send({
-                                                        statusMessage:
-                                                            err.message || "Some error occurred while removing all Videos.",
-                                                        statusCode: -999
-                                                    });
-                                                });
-                                        }
-                                    });
-                                }
-                            }
-
-
-                        });
+                        return
                     }
                 });
             }
@@ -482,14 +447,121 @@ exports.deleteAll = (req, res) => {
 
     });
 
+    fs.readdir(thumbnailsPathFolder, (err, files) => {
+        // if (err) throw err;
+        if (err) {
+            res.status(500).send({
+                statusMessage: "Could not read Thumbnails folder",
+                statusCode: -999
+            });
+            return
+        } else {
+            for (const file of files) {
+                fs.unlink(path.join(thumbnailsPathFolder, file), err => {
+                    if (err) {
+                        res.status(500).send({
+                            statusMessage: "Could not delete Thumbnails file",
+                            statusCode: -999
+                        });
+                        return
+                    }
+                });
+            }
+        }
+
+
+    });
+
+    Video.deleteMany({})
+        .then(data => {
+            res.send({
+                statusMessage: `${data.deletedCount} Videos were deleted successfully!`,
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage:
+                    err.message || "Some error occurred while removing all Videos.",
+                statusCode: -999
+            });
+        });
+
 
 
 
 };
 
 // Delete all Video by course id
-exports.deleteAllByCourse = (req, res) => {
+exports.deleteAllByCourse = async (req, res) => {
     const id = req.params.id;
+    const courseName = await findCourseName(id)
+
+    var condition = { videoCourse: id };
+
+    Video.find(condition)
+        .then(async (data) => {
+            for (const element of data) {
+                Video.findByIdAndRemove(element.id)
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot delete Video with id=${id}. Maybe Video was not found!`,
+                                statusCode: -999
+                            });
+
+                        } else {
+                            fs.unlink(videosPathFolder + data.videoFileName, (err) => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage: "Cannot Delete video with id=" + id,
+                                        statusCode: -999
+                                    });
+                                    console.log(err);
+                                    return
+                                }
+                            });
+
+                            // kalo sukses
+                            fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
+                                if (err) {
+                                    res.status(500).send({
+                                        statusMessage: "Cannot Delete thumbnail video with id=" + id,
+                                        statusCode: -999
+                                    });
+                                    console.log(err);
+                                    return
+                                }
+                            });
+
+                            res.send({
+                                statusMessage: "Video with id=" + id + ",was deleted successfully!",
+                                statusCode: 0
+                            });
+
+
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err)
+                        res.status(500).send({
+                            statusMessage: "Could not delete Video with id=" + id,
+                            statusCode: -999
+                        });
+                    });
+            }
+            res.send({
+                statusMessage: "Berhasil delete all videos with course name " + courseName,
+                statusCode: 0
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while retrieving the Video.",
+                statusCode: -999,
+            });
+        });
+
 
 
 };

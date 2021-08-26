@@ -9,7 +9,7 @@ module.exports = app => {
     // Retrieve all videos
     router.get("/videos", videos.findAll);
 
-       // Retrieve all videos by course
+    // Retrieve all videos by course
     router.get("/videos/course/:id", videos.findAllByCourse);
 
 
@@ -23,7 +23,7 @@ module.exports = app => {
     // Retrieve a single Tutorial with id
     router.get("/video/:id", videos.findOne);
 
-        // Stream Single Video
+    // Stream Single Video
     router.get("/video/stream/:id", videos.streamVideo);
 
     // Update a Tutorial with id
@@ -36,7 +36,7 @@ module.exports = app => {
     router.delete("/video", videos.deleteAll);
 
     // Delete all videos by course Id
-    router.delete("/video/course/:id", videos.deleteAllByCourse);
+    router.delete("/videos/course/:id", videos.deleteAllByCourse);
 
     app.use('/api/educen', router);
 };
