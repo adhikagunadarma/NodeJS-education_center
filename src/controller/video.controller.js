@@ -86,17 +86,40 @@ exports.create = (req, res) => {
         });
 
 };
+
+findCourseName = (id) => {
+    return new Promise((resolve, reject) => {
+        Course.findById(id)
+            .then(dataCourse => {
+                if (!dataCourse)
+                    reject(-999)
+                else {
+                    resolve(dataCourse.courseName)
+                }
+            })
+            .catch(err => {
+                reject(-999)
+            });
+    })
+}
+
 // Retrieve all Video from the database.
 exports.findAll = (req, res) => {
     const title = req.query.title;
     var condition = title ? { title: { $regex: new RegExp(title), $options: "i" } } : {};
 
     Video.find(condition)
-        .then(data => {
+        .then(async (data) => {
+            let updatedList = []
+            for (const element of data) {
+                const newData = element
+                newData.videoCourse = await findCourseName(element.videoCourse)
+                updatedList.push(newData)
+            }
             res.send({
-                statusMessage: "Berhasil GET all Videos",
+                statusMessage: "Berhasil GET all videos",
                 statusCode: 0,
-                data: data
+                data: updatedList
             });
         })
         .catch(err => {
