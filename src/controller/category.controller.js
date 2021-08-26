@@ -281,22 +281,7 @@ exports.deleteAll = (req, res) => {
                 statusCode: -999
             });
         } else {
-            if (files.length < 1) {
-                Category.deleteMany({})
-                    .then(data => {
-                        res.send({
-                            statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
-                            statusCode: 0
-                        });
-                    })
-                    .catch(err => {
-                        res.status(500).send({
-                            statusMessage:
-                                err.message || "Some error occurred while removing all Categories.",
-                            statusCode: -999
-                        });
-                    });
-            } else {
+            if (files.length >= 1) {
                 for (const file of files) {
                     fs.unlink(path.join(thumbnailsPathFolder, file), err => {
                         if (err) {
@@ -324,6 +309,20 @@ exports.deleteAll = (req, res) => {
                     });
                 }
             }
+            Category.deleteMany({})
+                .then(data => {
+                    res.send({
+                        statusMessage: `${data.deletedCount} Categories were successfully deleted!`,
+                        statusCode: 0
+                    });
+                })
+                .catch(err => {
+                    res.status(500).send({
+                        statusMessage:
+                            err.message || "Some error occurred while removing all Categories.",
+                        statusCode: -999
+                    });
+                });
 
         }
 
