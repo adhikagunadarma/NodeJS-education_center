@@ -435,11 +435,8 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     const id = req.params.id;
 
-    Course.find(id)
+    Course.findByIdAndRemove(id)
         .then(async (data) => {
-            console.log(data.courseTrailerName)
-            console.log(data.courseTrailerThumbnailName)
-            console.log(data.courseThumbnailName)
             if (!data) {
                 res.status(404).send({
                     statusMessage: `Cannot delete course with id=${id}. Maybe course was not found!`,

@@ -384,24 +384,25 @@ exports.delete = (req, res) => {
                             statusCode: -999
                         });
                         console.log(err);
-                    } else {
-                        // kalo sukses
-                        fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
-                            if (err) {
-                                res.status(500).send({
-                                    statusMessage: "Cannot Delete thumbnail video with id=" + id,
-                                    statusCode: -999
-                                });
-                                console.log(err);
-                            } else {
-                                // kalo sukses
-                                res.send({
-                                    statusMessage: "Video with id=" + id + ",was deleted successfully!",
-                                    statusCode: 0
-                                });
-                            }
-                        });
+                        return
                     }
+                });
+
+                // kalo sukses
+                fs.unlink(thumbnailsPathFolder + data.videoThumbnailName, (err) => {
+                    if (err) {
+                        res.status(500).send({
+                            statusMessage: "Cannot Delete thumbnail video with id=" + id,
+                            statusCode: -999
+                        });
+                        console.log(err);
+                        return
+                    }
+                });
+
+                res.send({
+                    statusMessage: "Video with id=" + id + ",was deleted successfully!",
+                    statusCode: 0
                 });
 
 
