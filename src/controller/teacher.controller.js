@@ -1,9 +1,10 @@
 const db = require("../model");
 const security = require("../utils/security.js");
 const Teacher = db.teacher;
+const Course = db.course;
 
 // Create and Save a new Teacher
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -12,13 +13,13 @@ exports.create = async(req, res) => {
             statusCode: -999
         });
     }
-    
+
     const hashedPassword = await security.hashPassword(req.body.teacherPassword)
     // Create a Teacher
     const teacher = new Teacher({
         teacherUsername: req.body.teacherUsername,
         teacherPassword: hashedPassword, // need to encrypt this later on
-        teacherName: req.body.teacherName ,
+        teacherName: req.body.teacherName,
         teacherEmail: req.body.teacherEmail ?? null,
         teacherPhone: req.body.teacherPhone ?? null,
         teacherBirthday: req.body.teacherBirthday ?? null,
@@ -48,7 +49,7 @@ exports.create = async(req, res) => {
 exports.findAll = (req, res) => {
     const name = req.query.teacherName;
     //only get active teacher for findall
-    var condition = name ? { teacherName: { $regex: new RegExp(title), $options: "i" },teacherStatus : 1  } : { teacherStatus : 1};
+    var condition = name ? { teacherName: { $regex: new RegExp(title), $options: "i" }, teacherStatus: 1 } : { teacherStatus: 1 };
 
     Teacher.find(condition)
         .then(data => {
@@ -133,6 +134,26 @@ exports.update = (req, res) => {
 exports.delete = (req, res) => {
     const id = req.params.id;
 
+
+    var condition = { courseTeacher: id };
+
+    Course.find(condition)
+        .then(async (data) => {
+            if (data.length > 0) {
+                res.status(404).send({
+                    statusMessage: `Cannot delete teacher with id=${id}. You need to delete the courses stored within this teacher first!`,
+                    statusCode: -999
+                });
+                return
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while retrieving the courses from the teacher.",
+                statusCode: -999,
+            });
+        });
+
     Teacher.findByIdAndRemove(id)
         .then(data => {
             if (!data) {
@@ -174,7 +195,7 @@ exports.deleteAll = (req, res) => {
 };
 
 // Login teacher
-exports.login = async(req, res) => {
+exports.login = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -185,35 +206,35 @@ exports.login = async(req, res) => {
     }
 
     const username = req.body.teacherUsername;
-    
-    var condition =  { teacherUsername: username } ;
+
+    var condition = { teacherUsername: username };
 
     Teacher.find(condition)
-    // Teacher.find({}).select('teacherUsername teacherPassword -_id')
-        .then(async(data) => {
-            if (data.length === 0){
+        // Teacher.find({}).select('teacherUsername teacherPassword -_id')
+        .then(async (data) => {
+            if (data.length === 0) {
                 res.status(404).send({
                     statusMessage: "Error Login, Not found teacher with teacherUsername " + username,
                     statusCode: -999,
                 });
             }
-           
+
             else {
                 console.log(data)
-                const checkPassword = await security.comparePassword(req.body.teacherPassword,data[0].teacherPassword)
-           
-                if (checkPassword){
+                const checkPassword = await security.comparePassword(req.body.teacherPassword, data[0].teacherPassword)
+
+                if (checkPassword) {
                     res.send({
-                    statusMessage: "Login Succeed",
-                    statusCode: 0,
-                    data: data
-                });
+                        statusMessage: "Login Succeed",
+                        statusCode: 0,
+                        data: data
+                    });
                 }
-                else{
+                else {
                     res.send({
                         statusMessage: "Login failed, please try again",
                         statusCode: -999,
-                });
+                    });
                 }
             }
         })
@@ -226,12 +247,12 @@ exports.login = async(req, res) => {
                     statusCode: -999,
                 });
         });
-    
- 
+
+
 
 };
 
-exports.changePass = async(req, res) => {
+exports.changePass = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -242,30 +263,30 @@ exports.changePass = async(req, res) => {
     }
 
     const username = req.body.teacherUsername;
-    
-    var condition =  { teacherUsername: username } ;
+
+    var condition = { teacherUsername: username };
 
     Teacher.find(condition)
-    // Teacher.find({}).select('teacherUsername teacherPassword -_id')
-        .then(async(data) => {
-            if (data.length === 0){
+        // Teacher.find({}).select('teacherUsername teacherPassword -_id')
+        .then(async (data) => {
+            if (data.length === 0) {
                 res.status(404).send({
                     statusMessage: "Error Login, Not found teacher with teacherUsername " + username,
                     statusCode: -999,
                 });
             }
-           
+
             else {
                 // console.log(data)
-                const checkPassword = await security.comparePassword(req.body.teacherPassword,data[0].teacherPassword)
-           
-                if (checkPassword){
+                const checkPassword = await security.comparePassword(req.body.teacherPassword, data[0].teacherPassword)
+
+                if (checkPassword) {
                     // res.send({
                     //     statusMessage: "Login Succeed",
                     //     statusCode: 0,
                     //     data: data
                     // });
-                    
+
                     const hashedNewPassword = await security.hashPassword(req.body.teacherNewPassword)
                     const id = data[0].id;
                     req.body.teacherPassword = hashedNewPassword
@@ -292,11 +313,11 @@ exports.changePass = async(req, res) => {
                         });
 
                 }
-                else{
+                else {
                     res.send({
                         statusMessage: "Wrong password, please try again",
                         statusCode: -999,
-                });
+                    });
                 }
             }
         })
@@ -309,8 +330,8 @@ exports.changePass = async(req, res) => {
                     statusCode: -999,
                 });
         });
-    
- 
+
+
 
 };
 
