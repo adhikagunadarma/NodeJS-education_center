@@ -10,6 +10,7 @@ const { teacher } = require("../model");
 
 const Teacher = db.teacher;
 const Course = db.course;
+const Video = db.video;
 
 // Create and Save a new course
 exports.create = (req, res) => {
@@ -434,6 +435,26 @@ exports.update = (req, res) => {
 // Delete a course with the specified id in the request
 exports.delete = (req, res) => {
     const id = req.params.id;
+
+    var condition = { videoCourse: id };
+
+    Video.find(condition)
+        .then(async (data) => {
+            if (data.length > 0) {
+                res.status(404).send({
+                    statusMessage: `Cannot delete course with id=${id}. You need to delete the videos stored within this course first!`,
+                    statusCode: -999
+                });
+                return
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                statusMessage: err.message || "Some error occurred while retrieving the video from the courses.",
+                statusCode: -999,
+            });
+        });
+
 
     Course.findByIdAndRemove(id)
         .then(async (data) => {
