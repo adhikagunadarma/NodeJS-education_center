@@ -38,6 +38,8 @@ exports.create = (req, res) => {
         courseMembership: req.body.courseMembership,
         coursePublished: req.body.coursePublished ?? false,
         courseTeacher: req.body.courseTeacher, //id tp pas get, fetch data nama teacher
+
+        courseCategory: req.body.courseCategory, //id tp pas get, fetch data nama teacher
     });
 
 
