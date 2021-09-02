@@ -278,7 +278,9 @@ exports.streamCourseTrailer = (req, res) => {
         });
 };
 
-// Update a course by the id in the request
+// Update a course by the id in the request,
+// actually update also  not affected with the new category field, dsince the mongoose fucntion auto save whatever the arguments has, 
+// just need to save the new field in the emodel
 exports.update = (req, res) => {
     if (!req.body) {
         return res.status(400).send({
