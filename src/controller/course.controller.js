@@ -222,6 +222,8 @@ exports.findOne = (req, res) => {
                 });
             else {
                 data.courseTeacher = await findTeacherName(data.courseTeacher)
+
+                data.courseCategory = await findCategoriesName(data.courseCategory)
                 res.send({
                     statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,
