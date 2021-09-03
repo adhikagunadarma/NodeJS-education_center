@@ -129,7 +129,7 @@ exports.findAll = (req, res) => {
             for (const element of data) {
                 const newData = element
                 newData.courseTeacher = await findTeacherName(element.courseTeacher)
-                newData.courseCategory = await findCourseCategories(element.courseCategory)
+                newData.courseCategory = await findCategoriesName(element.courseCategory)
                 updatedData.push(newData)
             }
             res.send({
@@ -162,7 +162,7 @@ findTeacherName = (id) => {
     })
 }
 
-findCourseCategories = (listCategories) => {
+findCategoriesName = (listCategories) => {
     return new Promise((resolve, reject) => {
         Category.find({ _id: { $in: listCategories } }).select('categoryName -_id')
             .then(dataCategories => {
@@ -189,6 +189,7 @@ exports.findAllByTeacher = (req, res) => {
             for (const element of data) {
                 const newData = element
                 newData.courseTeacher = await findTeacherName(element.courseTeacher)
+                newData.courseCategory = await findCategoriesName(element.courseCategory)
                 updatedData.push(newData)
             }
             res.send({
