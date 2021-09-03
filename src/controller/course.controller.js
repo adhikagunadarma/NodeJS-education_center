@@ -6,11 +6,11 @@ const courseThumbnailsPathFolder = './assets/course/thumbnails/';
 // const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
 const path = require('path');
-const { teacher } = require("../model");
 
 const Teacher = db.teacher;
 const Course = db.course;
 const Video = db.video;
+const Category = db.category;
 
 // Create and Save a new course
 exports.create = (req, res) => {
@@ -129,6 +129,7 @@ exports.findAll = (req, res) => {
             for (const element of data) {
                 const newData = element
                 newData.courseTeacher = await findTeacherName(element.courseTeacher)
+                newData.courseCategory = await findCourseCategories(element.courseCategory)
                 updatedData.push(newData)
             }
             res.send({
@@ -153,6 +154,22 @@ findTeacherName = (id) => {
                     reject(-999)
                 else {
                     resolve(dataTeacher.teacherName)
+                }
+            })
+            .catch(err => {
+                reject(-999)
+            });
+    })
+}
+
+findCourseCategories = (listCategories) => {
+    return new Promise((resolve, reject) => {
+        Category.find({ _id: { $in: listCategories } }).select('categoryName -_id')
+            .then(dataCategories => {
+                if (!dataCategories)
+                    reject(-999)
+                else {
+                    resolve(dataCategories.map((element) => (element.categoryName)))
                 }
             })
             .catch(err => {
