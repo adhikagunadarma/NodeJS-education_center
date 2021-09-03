@@ -1,9 +1,11 @@
+const { course } = require("../model");
 const db = require("../model");
 const security = require("../utils/security.js");
 const Student = db.student;
+const Course = db.course;
 
 // Create and Save a new student
-exports.create = async(req, res) => {
+exports.create = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -12,13 +14,13 @@ exports.create = async(req, res) => {
             statusCode: -999
         });
     }
-    
+
     const hashedPassword = await security.hashPassword(req.body.studentPassword)
     // Create a Student
     const student = new Student({
         studentUsername: req.body.studentUsername,
-        studentPassword: hashedPassword, 
-        studentName: req.body.studentName ,
+        studentPassword: hashedPassword,
+        studentName: req.body.studentName,
         studentEmail: req.body.studentEmail ?? null,
         studentPhone: req.body.studentPhone ?? null,
         studentBirthday: req.body.studentBirthday ?? null,
@@ -48,7 +50,7 @@ exports.create = async(req, res) => {
 exports.findAll = (req, res) => {
     const name = req.query.studentName;
     //only get active students for findall
-    var condition = name ? { studentName: { $regex: new RegExp(title), $options: "i" },studentStatus : 1  } : { studentStatus : 1};
+    var condition = name ? { studentName: { $regex: new RegExp(title), $options: "i" }, studentStatus: 1 } : { studentStatus: 1 };
 
     Student.find(condition)
         .then(data => {
@@ -175,7 +177,7 @@ exports.deleteAll = (req, res) => {
 };
 
 // Login student
-exports.login = async(req, res) => {
+exports.login = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -186,34 +188,34 @@ exports.login = async(req, res) => {
     }
 
     const username = req.body.studentUsername;
-    
-    var condition =  { studentUsername: username } ;
+
+    var condition = { studentUsername: username };
 
     Student.find(condition)
-        .then(async(data) => {
-            if (data.length === 0){
+        .then(async (data) => {
+            if (data.length === 0) {
                 res.status(404).send({
                     statusMessage: "Error Login, Not found student with usename " + username,
                     statusCode: -999,
                 });
             }
-           
+
             else {
                 // console.log(data)
-                const checkPassword = await security.comparePassword(req.body.studentPassword,data[0].studentPassword)
-           
-                if (checkPassword){
+                const checkPassword = await security.comparePassword(req.body.studentPassword, data[0].studentPassword)
+
+                if (checkPassword) {
                     res.send({
-                    statusMessage: "Login Succeed",
-                    statusCode: 0,
-                    data: data
-                });
+                        statusMessage: "Login Succeed",
+                        statusCode: 0,
+                        data: data
+                    });
                 }
-                else{
+                else {
                     res.send({
                         statusMessage: "Login failed, please try again",
                         statusCode: -999,
-                });
+                    });
                 }
             }
         })
@@ -226,12 +228,12 @@ exports.login = async(req, res) => {
                     statusCode: -999,
                 });
         });
-    
- 
+
+
 
 };
 
-exports.changePass = async(req, res) => {
+exports.changePass = async (req, res) => {
     // Validate request
     if (!req.body) {
         res.status(400).send({
@@ -242,23 +244,23 @@ exports.changePass = async(req, res) => {
     }
 
     const username = req.body.studentUsername;
-    
-    var condition =  { studentUsername: username } ;
+
+    var condition = { studentUsername: username };
 
     Student.find(condition)
-        .then(async(data) => {
-            if (data.length === 0){
+        .then(async (data) => {
+            if (data.length === 0) {
                 res.status(404).send({
                     statusMessage: "Error Login, Not found student with username " + username,
                     statusCode: -999,
                 });
             }
-           
+
             else {
-                const checkPassword = await security.comparePassword(req.body.studentPassword,data[0].studentPassword)
-           
-                if (checkPassword){
-                    
+                const checkPassword = await security.comparePassword(req.body.studentPassword, data[0].studentPassword)
+
+                if (checkPassword) {
+
                     const hashedNewPassword = await security.hashPassword(req.body.studentNewPassword)
                     const id = data[0].id;
                     req.body.studentPassword = hashedNewPassword
@@ -285,11 +287,11 @@ exports.changePass = async(req, res) => {
                         });
 
                 }
-                else{
+                else {
                     res.send({
                         statusMessage: "Wrong password, please try again",
                         statusCode: -999,
-                });
+                    });
                 }
             }
         })
@@ -302,10 +304,107 @@ exports.changePass = async(req, res) => {
                     statusCode: -999,
                 });
         });
-    
- 
+
+
 
 };
 
+// will need to be update later on as the code run from client side
+exports.buyCourse = async (req, res) => {
+    // Validate request
+    if (!req.body) {
+        res.status(400).send({
+            statusMessage:
+                "Content Cannot be empty",
+            statusCode: -999
+        });
+    }
 
+    // should have a payment validation within before add it the data to database
+
+    const student_id = req.body.studentId;
+    const course_id = req.body.courseId;
+
+
+    Student.findById(student_id)
+        .then(async (data) => {
+            if (data.length === 0) {
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found student with id " + student_id,
+                    statusCode: -999,
+                });
+                return
+            }
+
+            else {
+                data.studentCourse.push(course_id)
+                req.body.studentCourse = data.studentCourse
+
+                Student.findByIdAndUpdate(student_id, req.body, { useFindAndModify: false })
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot update student with id=${id}. Maybe student was not found!`,
+                                statusCode: -999
+                            });
+                        } else {
+                            res.send({
+                                statusMessage: `Course id ${course_id} for student ${student_id} has been added`,
+                                statusCode: 0
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            statusMessage: "Error updating student with id=" + id + ". Error : " + err.message,
+                            statusCode: -999
+                        });
+                        return
+                    });
+
+            }
+        })
+
+    Course.findById(course_id)
+        .then(async (data) => {
+            if (data.length === 0) {
+                res.status(404).send({
+                    statusMessage: "Error Login, Not found course with id " + course_id,
+                    statusCode: -999,
+                });
+                return
+            }
+
+            else {
+                data.courseStudent.push(student_id)
+                req.body.courseStudent = data.courseStudent
+
+                Course.findByIdAndUpdate(course_id, req.body, { useFindAndModify: false })
+                    .then(data => {
+                        if (!data) {
+                            res.status(404).send({
+                                statusMessage: `Cannot update course with id=${id}. Maybe course was not found!`,
+                                statusCode: -999
+                            });
+                        } else {
+                            res.send({
+                                statusMessage: `Student id ${student_id} for course ${course_id} has been added`,
+                                statusCode: 0
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        res.status(500).send({
+                            statusMessage: "Error updating course with id=" + id + ". Error : " + err.message,
+                            statusCode: -999
+                        });
+                        return
+                    });
+
+            }
+        })
+
+
+
+};
 
