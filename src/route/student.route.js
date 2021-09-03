@@ -22,13 +22,17 @@ module.exports = app => {
     // Create a new student
     router.delete("/student", students.deleteAll);
 
-    
+
     // student login
     router.post("/student/login", students.login);
 
-    
+
     // student change pass
     router.post("/student/changePassword", students.changePass);
+
+
+    // student buy course 
+    router.post("/student/buyCourse", students.buyCourse);
 
     app.use('/api/educen', router);
 };
