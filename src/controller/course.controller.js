@@ -164,13 +164,17 @@ findTeacherName = (id) => {
 
 findCategoriesName = (listCategories) => {
     return new Promise((resolve, reject) => {
-        Category.find({ _id: { $in: listCategories } }).select('categoryName -_id')
+        Category.find({ _id: { $in: listCategories } }).select('categoryName')
             .then(dataCategories => {
                 if (!dataCategories)
                     reject(-999)
                 else {
-                    resolve(dataCategories.map((element) => (element.categoryName)))
+                    // console.log(dataCategories)
+                    // resolve(dataCategories.map((element) => ({id : element.id,categoryName : element.categoryName})))
+                    resolve(dataCategories)
+                    
                 }
+                
             })
             .catch(err => {
                 reject(-999)
@@ -224,6 +228,8 @@ exports.findOne = (req, res) => {
                 data.courseTeacher = await findTeacherName(data.courseTeacher)
 
                 data.courseCategory = await findCategoriesName(data.courseCategory)
+           
+                console.log(data.courseCategory)
                 res.send({
                     statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,
