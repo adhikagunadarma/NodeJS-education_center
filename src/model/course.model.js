@@ -14,7 +14,7 @@ module.exports = mongoose => {
             courseMembership: Boolean,
             coursePublished: Boolean,
             courseTeacher: String,
-            courseCategory: [String],
+            courseCategory: [{}],
             courseStudent: [String] // for the student that buy
         },
         { timestamps: true }

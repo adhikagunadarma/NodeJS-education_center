@@ -6,6 +6,7 @@ const courseThumbnailsPathFolder = './assets/course/thumbnails/';
 // const pathFolder = 'D:/application-project/education-center/education-center-backend-node/NodeJS-education_center/assets/';
 const fs = require('fs');
 const path = require('path');
+const { set } = require("mongoose");
 
 const Teacher = db.teacher;
 const Course = db.course;
@@ -128,9 +129,10 @@ exports.findAll = (req, res) => {
             let updatedData = []
             for (const element of data) {
                 const newData = element
-                newData.courseTeacher = await findTeacherName(element.courseTeacher)
-                newData.courseCategory = await findCategoriesName(element.courseCategory)
-                updatedData.push(newData)
+
+                    newData.courseTeacher = await findTeacherName(element.courseTeacher)
+                    newData.courseCategory = await findCategoriesName(element.courseCategory)
+                    updatedData.push(newData)
             }
             res.send({
                 statusMessage: "Berhasil GET all courses",
@@ -162,17 +164,18 @@ findTeacherName = (id) => {
     })
 }
 
-findCategoriesName = (listCategories) => {
+findCategoriesName = (listCategories)  => {
     return new Promise((resolve, reject) => {
-        Category.find({ _id: { $in: listCategories } }).select('categoryName')
+        Category.find({ _id: { $in: listCategories } }).select('_id categoryName')
             .then(dataCategories => {
                 if (!dataCategories)
                     reject(-999)
                 else {
-                    // console.log(dataCategories)
-                    // resolve(dataCategories.map((element) => ({id : element.id,categoryName : element.categoryName})))
+                    // let categories = dataCategories.map((element) => ({id :element.id,  name : element.categoryName}))
+                 
                     resolve(dataCategories)
-                    
+                    // resolve(dataCategories.map((element) => (element.categoryName)))
+                 
                 }
                 
             })
@@ -225,11 +228,9 @@ exports.findOne = (req, res) => {
                     statusCode: -999,
                 });
             else {
-                data.courseTeacher = await findTeacherName(data.courseTeacher)
-
+                data.courseTeacher = await findTeacherName(data.courseTeacher) 
                 data.courseCategory = await findCategoriesName(data.courseCategory)
            
-                console.log(data.courseCategory)
                 res.send({
                     statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,
