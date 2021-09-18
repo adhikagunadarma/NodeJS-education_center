@@ -94,7 +94,7 @@ findCourseName = (id) => {
                 if (!dataCourse)
                     reject(-999)
                 else {
-                    resolve(dataCourse.courseName)
+                    resolve( dataCourse.courseName)
                 }
             })
             .catch(err => {
@@ -113,7 +113,7 @@ exports.findAll = (req, res) => {
             let updatedList = []
             for (const element of data) {
                 const newData = element
-                newData.videoCourse = await findCourseName(element.videoCourse)
+                newData.videoCourseName = await findCourseName(element.videoCourse)
                 updatedList.push(newData)
             }
             res.send({
@@ -141,7 +141,7 @@ exports.findAllByCourse = (req, res) => {
             for (const element of data) {
 
                 const newData = element
-                newData.videoCourse = await findCourseName(element.videoCourse)
+                newData.videoCourseName = await findCourseName(element.videoCourse)
 
                 updatedList.push(newData)
             }
@@ -171,7 +171,7 @@ exports.findOne = (req, res) => {
                     statusCode: -999,
                 });
             else {
-                data.videoCourse = await findCourseName(data.videoCourse)
+                data.videoCourseName = await findCourseName(data.videoCourse)
                 res.send({
                     statusMessage: "Berhasil GET course with id " + id,
                     statusCode: 0,

@@ -9,7 +9,8 @@ module.exports = mongoose => {
             videoThumbnail: String,
             videoThumbnailName: String,
             videoCourse: String,
-            videoTotalViews: Number
+            videoTotalViews: Number,
+            videoCourseName : String
         },
         { timestamps: true }
     );
