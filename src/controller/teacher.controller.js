@@ -1,5 +1,6 @@
 const db = require("../model");
 const security = require("../utils/security.js");
+const auth = require("../utils/auth.js");
 const Teacher = db.teacher;
 const Course = db.course;
 
@@ -224,11 +225,24 @@ exports.login = async (req, res) => {
                 const checkPassword = await security.comparePassword(req.body.teacherPassword, data[0].teacherPassword)
 
                 if (checkPassword) {
-                    res.send({
-                        statusMessage: "Login Succeed",
-                        statusCode: 0,
-                        data: data
-                    });
+                      let token = await auth.generateToken(req.body.teacherUsername);
+                      if (!token) {
+                        //kalo token null
+                        res.send({
+                          statusMessage:
+                            "Login failed, please make sure that redis server is running",
+                          statusCode: -999,
+                        });
+                      }
+                          res.send({
+                            statusMessage: "Login Succeed",
+                            statusCode: 0,
+                            data: {
+                              user: userFound,
+                              token: token,
+                            },
+                          });
+             
                 }
                 else {
                     res.send({
