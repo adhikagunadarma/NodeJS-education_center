@@ -425,7 +425,6 @@ exports.delete = (req, res) => {
 
 // Delete all Video from the database.
 exports.deleteAll = (req, res) => {
-  console.log("test");
   fs.readdir(videosPathFolder, (err, files) => {
     // if (err) throw err;
     if (err) {
